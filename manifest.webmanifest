@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Ledger",
   "short_name": "Ledger",
-  "description": "Ledger by ARX · Beta 1.1",
+  "description": "Ledger by ARX · Beta 1.3",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
