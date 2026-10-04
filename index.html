@@ -129,6 +129,7 @@ button{cursor:pointer}
 .analytics-consent-actions button{min-height:46px}
 .analytics-status{font-size:10px;font-weight:850}.analytics-status.on{color:#62d997}.analytics-status.off{color:var(--muted)}
 @media(max-width:390px){.analytics-consent-actions{grid-template-columns:1fr}}
+.migration-receiver-note{margin:0 0 12px;padding:11px 12px;border:1px solid rgba(89,173,255,.24);border-radius:12px;background:rgba(89,173,255,.07);color:#b8dfff;font-size:11px;line-height:1.45}
 .feedback-textarea{width:100%;min-height:150px;resize:vertical;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:12px;padding:12px 13px;outline:none;font:inherit;line-height:1.45}.feedback-meta{font-size:10px;color:var(--muted);line-height:1.45;margin:8px 0 12px}.beta-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border:1px solid rgba(91,183,255,.22);border-radius:9px;background:rgba(91,183,255,.07);color:#9dd4ff;font-size:10px;font-weight:850;letter-spacing:.06em}.safety-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.safety-row button{flex:1;min-width:130px}.pwa-state{font-size:10px;font-weight:850;color:#9dd4ff}.settings-copy .privacy-note{color:#7f9ab5;font-size:9px;margin-top:3px}
 
 </style>
@@ -1102,6 +1103,24 @@ button{cursor:pointer}
     el('loan-back').addEventListener('click',()=>setRoute('plan'));el('loan-edit').addEventListener('click',()=>openLiability(l.id));el('loan-pay').addEventListener('click',()=>{pendingLiabilityLinkId=l.id;openTransaction('expense');});el('loan-extra-monthly').addEventListener('input',updateSim);el('loan-oneoff').addEventListener('input',updateSim);updateSim();
   }
 
+
+  function maybeStartFlowFiMigration(){
+    const params=new URLSearchParams(location.search);
+    if(params.get('migration')!=='flowfi')return;
+    setTimeout(()=>{
+      const d=el('import-dialog');
+      if(!d)return;
+      const h=d.querySelector('h2'); if(h)h.textContent='Restaurar datos de FlowFi';
+      const status=el('import-status');
+      if(status){
+        status.classList.remove('hidden');
+        status.innerHTML='<div class="migration-receiver-note"><b>Migración FlowFi → Ledger</b><br>Selecciona el archivo <b>ledger-migration-….json</b> que acabas de guardar. No borres la app antigua hasta comprobar tus movimientos.</div>';
+      }
+      el('import-file').value='';
+      d.showModal();
+    },500);
+  }
+
   function renderSettings(){
     const details=accountDetails(); const weekdays=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
     const custom=(state.customCategories||[]).map(c=>`<div class="simple-row"><span class="category-icon">${escapeHtml(c.icon||'✦')}</span><div class="row-main"><div class="row-title">${escapeHtml(c.name)}</div><div class="row-sub">${c.type==='income'?'Ingreso':'Gasto'} · color persistente</div></div><button class="delete-btn" data-delete-custom-cat="${c.id}">×</button></div>`).join('');
@@ -1402,7 +1421,7 @@ button{cursor:pointer}
   window.addEventListener('error',()=>analyticsEmit('ledger-error','javascript'));
   window.addEventListener('unhandledrejection',()=>analyticsEmit('ledger-error','promise'));
   if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>analyticsEmit('ledger-error','service-worker'));
-  render();analyticsMaybeAsk();if(bootRecoveryNotice)setTimeout(()=>toast(bootRecoveryNotice),500);
+  render();analyticsMaybeAsk();maybeStartFlowFiMigration();if(bootRecoveryNotice)setTimeout(()=>toast(bootRecoveryNotice),500);
 })();
 
 </script>
