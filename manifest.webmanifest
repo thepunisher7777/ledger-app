@@ -16,19 +16,19 @@
   "lang": "es",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "ledger-icon-192-v2.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icon-512.png",
+      "src": "ledger-icon-512-v2.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "apple-touch-icon.png",
+      "src": "ledger-apple-touch-v2.png",
       "sizes": "180x180",
       "type": "image/png",
       "purpose": "any"

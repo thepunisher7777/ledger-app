@@ -1,14 +1,12 @@
-LEDGER by ARX — Hotfix de icono FlowFi
+# LEDGER by ARX — Force refresh icon hotfix
 
-Este paquete sustituye únicamente los iconos visuales para volver al icono clásico de FlowFi:
-- apple-touch-icon.png
-- icon-192.png
-- icon-512.png
+Este paquete fuerza el cambio al icono clásico de FlowFi usando nombres nuevos de archivo para saltarse la caché agresiva de Safari/PWA.
 
-No modifica datos, lógica, analytics ni almacenamiento.
+Sube todos los archivos y reemplaza los existentes en `ledger-app`.
 
-Sube estos archivos y reemplázalos en el repositorio ledger-app.
-Si la PWA ya estaba instalada en iPhone, puede hacer falta:
-1) abrir la URL nueva en Safari,
-2) eliminar el acceso directo antiguo de la pantalla de inicio,
-3) volver a añadir la app a pantalla de inicio.
+Después:
+1. abre Ledger en Safari y recarga;
+2. si ya la tenías añadida a Inicio, elimina SOLO el acceso directo/PWA de la pantalla de inicio;
+3. vuelve a Añadir a pantalla de inicio desde Safari.
+
+No cambia la clave local `flowfi.public.v27` ni la lógica de datos.

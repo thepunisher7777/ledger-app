@@ -12,7 +12,7 @@
   <meta name="description" content="Ledger by ARX: control de gastos, calendario financiero, préstamos, patrimonio y estadísticas útiles." />
   <meta name="format-detection" content="telephone=no" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="apple-touch-icon" href="ledger-apple-touch-v2.png" />
 <style>
 
 :root {
@@ -40,7 +40,7 @@ body{overscroll-behavior-y:none;position:relative}
 body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.42;background:linear-gradient(135deg,rgba(91,183,255,.08),transparent 32%),linear-gradient(90deg,rgba(91,183,255,.05) 1px,transparent 1px),linear-gradient(180deg,rgba(91,183,255,.04) 1px,transparent 1px);background-size:100% 100%,120px 120px,120px 120px;mask-image:linear-gradient(180deg,rgba(0,0,0,.75),rgba(0,0,0,.18));}
 button,input,select{font:inherit;color:inherit}
 button{cursor:pointer}
-.app-shell{min-height:100dvh;padding-bottom:calc(92px + var(--safe-bottom));position:relative;isolation:isolate}.app-shell::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:url('./icon-512.png') no-repeat center 33%;background-size:min(72vw,360px);opacity:.065;filter:saturate(1.05) brightness(.88)}.app-shell::after{content:"LEDGER by ARX";position:fixed;left:50%;top:55%;transform:translate(-50%,-50%);font-size:clamp(54px,15vw,126px);font-weight:900;letter-spacing:.16em;color:rgba(115,190,255,.04);white-space:nowrap;pointer-events:none;z-index:0;text-shadow:0 0 38px rgba(64,154,245,.035)}
+.app-shell{min-height:100dvh;padding-bottom:calc(92px + var(--safe-bottom));position:relative;isolation:isolate}.app-shell::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:url('./ledger-icon-512-v2.png') no-repeat center 33%;background-size:min(72vw,360px);opacity:.065;filter:saturate(1.05) brightness(.88)}.app-shell::after{content:"LEDGER by ARX";position:fixed;left:50%;top:55%;transform:translate(-50%,-50%);font-size:clamp(54px,15vw,126px);font-weight:900;letter-spacing:.16em;color:rgba(115,190,255,.04);white-space:nowrap;pointer-events:none;z-index:0;text-shadow:0 0 38px rgba(64,154,245,.035)}
 .topbar{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:calc(18px + env(safe-area-inset-top,0px)) 20px 14px;background:color-mix(in srgb,var(--bg) 86%, transparent);backdrop-filter:blur(18px)}
 .topbar h1{font-size:30px;line-height:1.05;margin:2px 0 0;letter-spacing:-.035em}.brand-lockup{display:flex;align-items:center;gap:12px}.brand-logo{width:44px;height:42px;border-radius:12px;object-fit:contain;padding:2px;background:rgba(9,27,48,.72);border:1px solid rgba(88,177,255,.22);box-shadow:0 8px 22px rgba(0,0,0,.22)}.brand-meta{display:flex;flex-direction:column}.home-summary-stack{display:grid;gap:10px}.hero-card.compact-home-hero{padding:16px}.hero-card.compact-home-hero .hero-sub{font-size:11px}.compact-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}.home-inline-summary{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.home-inline-summary .hero-value{font-size:32px}.home-inline-side{min-width:108px;text-align:right}.home-inline-side span{display:block;font-size:10px;color:var(--muted);margin-bottom:4px}.home-inline-side b{display:block;font-size:18px;letter-spacing:-.02em}.home-pill-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.compact-tx .transaction-row:last-child{border-bottom:0}.section.compact-section{margin-top:12px}.section-head.compact-head h2{font-size:17px}.home-toolbar-note{font-size:11px;color:var(--muted);margin:-2px 0 8px}.home-orbit-section{margin-top:4px}.home-kpis-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.mini-stat-card{padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(180deg,rgba(16,34,57,.92),rgba(8,22,38,.92))}.mini-stat-card span{display:block;font-size:10px;color:var(--muted);margin-bottom:5px}.mini-stat-card b{font-size:16px;letter-spacing:-.02em}@media(max-width:460px){.brand-logo{width:40px;height:38px;border-radius:11px}.topbar h1{font-size:27px}.home-inline-summary{flex-direction:column;gap:8px}.home-inline-side{text-align:left;min-width:0}.compact-kpis,.home-kpis-grid{grid-template-columns:1fr 1fr 1fr}.monefy-hub{width:min(100%,390px)}.monefy-orbit-item{width:72px;min-height:58px}.monefy-orbit-icon{font-size:24px}.monefy-orbit-pct{font-size:11px}.monefy-orbit-name{font-size:9px;max-width:70px}}
 .eyebrow{font-size:11px;font-weight:800;letter-spacing:.16em;color:var(--accent)}
@@ -138,7 +138,7 @@ button{cursor:pointer}
   <div id="app" class="app-shell">
     <header class="topbar">
       <div class="brand-lockup">
-        <img src="icon-192.png" class="brand-logo" alt="Ledger by ARX" style="width:44px;height:42px;max-width:44px;max-height:42px;display:block;object-fit:contain"/>
+        <img src="ledger-icon-192-v2.png" class="brand-logo" alt="Ledger by ARX" style="width:44px;height:42px;max-width:44px;max-height:42px;display:block;object-fit:contain"/>
         <div class="brand-meta">
           <div class="eyebrow">LEDGER</div>
           <h1 id="page-title">Inicio</h1>
