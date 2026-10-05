@@ -2,9 +2,10 @@
   "name": "ledger-audit",
   "private": true,
   "scripts": {
-    "test": "node scripts/audit.cjs && node scripts/sw-audit.cjs"
+    "test": "node scripts/audit.cjs && node scripts/multicurrency-audit.cjs && node scripts/sw-audit.cjs"
   },
   "devDependencies": {
     "jsdom": "30.1.2"
-  }
+  },
+  "version": "1.5.0"
 }

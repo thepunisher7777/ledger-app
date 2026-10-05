@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Ledger",
   "short_name": "Ledger",
-  "description": "Ledger by ARX · Beta 1.4.2 · International language hotfix",
+  "description": "Ledger by ARX · Beta 1.5.0 · International language hotfix",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

@@ -29,3 +29,9 @@ La clave local histórica `flowfi.public.v27` se conserva únicamente por compat
 ## Idioma de la interfaz
 
 La preferencia de idioma se guarda localmente en `ledger.ui.language.v1`. Cambiar el idioma no traduce ni modifica movimientos, notas, cuentas, importes, presupuestos, deudas ni archivos de copia de seguridad.
+
+## Tipos de cambio (Beta 1.5.0)
+
+Las cuentas EUR/USD, sus importes y el último tipo guardado permanecen en el estado local. La actualización automática consulta exclusivamente `EUR/USD` al proveedor BCE de Frankfurter (`https://api.frankfurter.dev/v2/providers/ecb/rate/EUR/USD`), sin credenciales, sin referencia de la página y sin enviar importes, nombres de cuenta, movimientos ni archivos. El proveedor recibe la conexión de red. Puede desactivarse desde Ajustes y sustituirse por un cambio manual. Sin conexión se conserva el último tipo válido y se muestra su fecha.
+
+Portfolio Performance XML se analiza en el dispositivo como vista previa. No se sube a ningún servidor ni reemplaza los datos. No se añade login; cualquier sincronización futura deberá ser opcional y mantener el modo local.
