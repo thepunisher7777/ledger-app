@@ -13,6 +13,7 @@ REQUIRED = [
     "posthog-stub.js",
     "posthog-bridge.js",
     "arx-analytics-guard.js",
+    "i18n.js",
     "README.md",
     "PRIVACY.md",
     "CHANGELOG.md",
@@ -42,7 +43,7 @@ for name in REQUIRED:
     p = ROOT / name
     if not p.exists() or p.stat().st_size == 0:
         fail(f"Missing or empty required file: {name}")
-ok("Required Ledger Beta 1.3 files are present")
+ok("Required Ledger Beta 1.4 files are present")
 
 manifest = json.loads((ROOT / "manifest.webmanifest").read_text(encoding="utf-8"))
 for key, value in {
@@ -54,13 +55,13 @@ for key, value in {
 }.items():
     if manifest.get(key) != value:
         fail(f"manifest {key!r} must be {value!r}; got {manifest.get(key)!r}")
-if "Beta 1.3" not in manifest.get("description", ""):
-    fail("Manifest description must identify Beta 1.3")
+if "Beta 1.4" not in manifest.get("description", ""):
+    fail("Manifest description must identify Beta 1.4")
 ok("Manifest identity and project-page scope are stable")
 
 html = (ROOT / "index.html").read_text(encoding="utf-8")
 for marker in [
-    "const APP_VERSION = 'Beta 1.3';",
+    "const APP_VERSION = 'Beta 1.4';",
     "const STORAGE_KEY = 'flowfi.public.v27';",
     "https://arx.local/telemetry/ledger",
     "maybeStartFlowFiMigration",
@@ -71,28 +72,71 @@ for marker in [
     '<script src="posthog-stub.js"></script>',
     '<script src="posthog-bridge.js"></script>',
     '<script src="arx-analytics-guard.js"></script>',
+    '<script src="i18n.js"></script>',
+    "ledger-language-select",
+    "window.LedgerI18n?.setLanguage",
 ]:
     if marker not in html:
         fail(f"Ledger runtime invariant missing: {marker}")
-if not (html.find('posthog-stub.js') < html.find('posthog-bridge.js') < html.find('arx-analytics-guard.js')):
-    fail("Analytics scripts must load in stub -> bridge -> guard order")
+if not (
+    html.find('posthog-stub.js')
+    < html.find('posthog-bridge.js')
+    < html.find('arx-analytics-guard.js')
+    < html.find('i18n.js')
+):
+    fail("Runtime scripts must load in analytics -> i18n order")
 if "map(transactionRow)" in html:
     fail("Legacy transactionRow map bug reappeared")
-ok("Ledger runtime, migration receiver and storage compatibility are intact")
+ok("Ledger runtime, migration receiver, i18n hook and storage compatibility are intact")
+
+# Internationalization is a UI-only layer. It must not read/write finance state.
+i18n = (ROOT / "i18n.js").read_text(encoding="utf-8")
+for marker in [
+    "ledger.ui.language.v1",
+    "const SUPPORTED = ['es','en','fr','de','it','pt'];",
+    "es:'es-ES'",
+    "en:'en-GB'",
+    "fr:'fr-FR'",
+    "de:'de-DE'",
+    "it:'it-IT'",
+    "pt:'pt-PT'",
+    "window.LedgerI18n",
+    "MutationObserver",
+    "Automático (dispositivo)",
+    "Español",
+    "English",
+    "Français",
+    "Deutsch",
+    "Italiano",
+    "Português",
+]:
+    if marker not in i18n:
+        fail(f"i18n invariant missing: {marker}")
+for forbidden in [
+    "flowfi.public.v27",
+    "state.transactions",
+    "state.liabilities",
+    "state.accounts",
+    "localStorage.removeItem",
+]:
+    if forbidden in i18n:
+        fail(f"i18n layer must not access or mutate finance state: {forbidden}")
+ok("Internationalization is isolated from finance data and supports six languages + automatic mode")
 
 sw = (ROOT / "sw.js").read_text(encoding="utf-8")
 for marker in [
-    "ledger-app-beta-1-3",
+    "ledger-app-beta-1-4",
     "ledger-app-",
     "./posthog-stub.js",
     "./posthog-bridge.js",
     "./arx-analytics-guard.js",
+    "./i18n.js",
 ]:
     if marker not in sw:
         fail(f"Service worker invariant missing: {marker}")
 if "flowfi-ledger-migration-" in sw:
     fail("New Ledger service worker must not own FlowFi migration caches")
-ok("Ledger service worker cache namespace is isolated")
+ok("Ledger Beta 1.4 service worker cache namespace is isolated")
 
 bridge = (ROOT / "posthog-bridge.js").read_text(encoding="utf-8")
 for marker in [
@@ -141,11 +185,21 @@ for name, expected in {
 ok("PWA icon dimensions are correct")
 
 metrics = (ROOT / "metrics.html").read_text(encoding="utf-8")
-if "Beta 1.3" not in metrics or "POSTHOG EU" not in metrics:
-    fail("metrics.html must describe Beta 1.3 / PostHog EU")
+if "Beta 1.4" not in metrics or "POSTHOG EU" not in metrics:
+    fail("metrics.html must describe Beta 1.4 / PostHog EU")
 for forbidden in ["localStorage.getItem('flowfi.public.v27')", "state.transactions", "state.liabilities"]:
     if forbidden in metrics:
         fail(f"metrics page must not access finance data: {forbidden}")
 ok("Public analytics status page is separated from finance state")
 
-print("\nLedger Beta 1.3 smoke checks passed.")
+readme = (ROOT / "README.md").read_text(encoding="utf-8")
+privacy = (ROOT / "PRIVACY.md").read_text(encoding="utf-8")
+changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+for label, doc in [("README", readme), ("CHANGELOG", changelog)]:
+    if "Beta 1.4" not in doc:
+        fail(f"{label} must identify Beta 1.4")
+if "ledger.ui.language.v1" not in privacy or "flowfi.public.v27" not in privacy:
+    fail("PRIVACY must document UI-language storage and finance-state compatibility")
+ok("Release documentation matches Beta 1.4 International")
+
+print("\nLedger Beta 1.4 International smoke checks passed.")
