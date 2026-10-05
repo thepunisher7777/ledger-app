@@ -1,5 +1,13 @@
 # Changelog
 
+## Beta 1.4.1 — International hotfix — 2026-10-05
+
+- Corregidos textos españoles residuales al usar English, Français, Deutsch, Italiano y Português.
+- Añadidas traducciones de Inicio, compromisos, métricas, ajustes y textos explicativos.
+- Corregidas líneas dinámicas que mezclaban categorías traducidas con etiquetas de sistema en español.
+- No se modifican movimientos, importes, cuentas, backups ni `flowfi.public.v27`.
+
+
 ## Beta 1.4 — International — 2026-10-05
 
 - Añadido selector de idioma en Ajustes.

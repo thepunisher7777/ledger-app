@@ -1,4 +1,4 @@
-# LEDGER by ARX · Beta 1.4 — International
+# LEDGER by ARX · Beta 1.4.1 — International hotfix
 
 PWA local-first de finanzas personales.
 
@@ -13,3 +13,7 @@ PWA local-first de finanzas personales.
 - Clave histórica `flowfi.public.v27` preservada por compatibilidad.
 
 App: https://thepunisher7777.github.io/ledger-app/
+
+## Beta 1.4.1
+- Hotfix de traducciones mixtas en textos dinámicos y tarjetas de Inicio, Estadísticas, Plan y Ajustes.
+- Traducción de etiquetas de sistema dentro de líneas combinadas sin modificar los datos guardados.
