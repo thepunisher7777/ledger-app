@@ -41,7 +41,7 @@ Checks additionally cover cancelled restore, malformed local safety copies, and 
 
 ## Beta 1.5.0 — multidivisa (2026-10-05)
 
-Datos ficticios exclusivamente. Se mantienen las 216 comprobaciones funcionales en seis idiomas. Añadidas 25 pruebas específicas EUR/USD/XML y la auditoría del service worker; smoke de versión, privacidad, migración y PWA aprobado.
+Datos ficticios exclusivamente. Se mantienen las 216 comprobaciones funcionales en seis idiomas. Añadidas 26 pruebas específicas EUR/USD/XML y la auditoría del service worker; smoke de versión, privacidad, migración y PWA aprobado.
 
 Verificado: conversiones en ambos sentidos, cambio de moneda base sin reescribir importes, patrimonio y deuda, ambas patas de transferencia, importe recibido real, rechazo de cuota en divisa distinta, fijos USD, gráficas/filtros nativos, ausencia de cambio sin equivalencia inventada, restauración de backups antiguos EUR y nuevos campos aditivos, CSV con divisas y deduplicación, exportación/reimportación, XML malformado/entidades/fechas, vista previa sin mutaciones, error de red, respuesta de cambio invertida y cuota de almacenamiento.
 
