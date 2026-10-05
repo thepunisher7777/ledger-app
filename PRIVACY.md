@@ -24,3 +24,8 @@ Eventos permitidos: sesiones, versión, plataforma, pantallas, uso de funciones,
 Nunca deben enviarse a analítica importes, movimientos, categorías financieras, notas, nombres de cuentas, saldos, presupuestos, deudas, archivos importados/exportados ni texto libre del usuario.
 
 La clave local histórica `flowfi.public.v27` se conserva únicamente por compatibilidad de datos durante la migración FlowFi → Ledger.
+
+
+## Idioma de la interfaz
+
+La preferencia de idioma se guarda localmente en `ledger.ui.language.v1`. Cambiar el idioma no traduce ni modifica movimientos, notas, cuentas, importes, presupuestos, deudas ni archivos de copia de seguridad.
