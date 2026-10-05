@@ -484,10 +484,31 @@ button{cursor:pointer}
     }catch(e){console.error('Ledger save error',e);try{toast('No se pudieron guardar los cambios');}catch{}return false;}
   }
   function createSafetySnapshot(){try{const current=localStorage.getItem(STORAGE_KEY);if(current){JSON.parse(current);localStorage.setItem(SAFETY_BACKUP_KEY,current);return true;}}catch{}return false;}
+  function commitRestoredState(next){
+    const previous=state;
+    let previousSafety;
+    // Preserve the recovery snapshot before replacing the durable finance state.
+    // If persistence fails, keep the original in-memory state and show no success.
+    try{
+      previousSafety=localStorage.getItem(SAFETY_BACKUP_KEY);
+      const current=localStorage.getItem(STORAGE_KEY);
+      if(current){JSON.parse(current);localStorage.setItem(SAFETY_BACKUP_KEY,current);}
+    }catch{toast('No se pudo guardar el estado anterior. Restauración cancelada');return false;}
+    state=next;
+    if(!saveState({snapshot:false})){
+      state=previous;
+      try{if(previousSafety===null)localStorage.removeItem(SAFETY_BACKUP_KEY);else localStorage.setItem(SAFETY_BACKUP_KEY,previousSafety);}catch{}
+      return false;
+    }
+    lastDeleted=null;editingTxId=null;editingRecurringId=null;editingLiabilityId=null;
+    pendingLiabilityLinkId=null;pendingTransactionDate=null;selectedCalendarDate=null;loanViewId=null;
+    selectedMonth=currentCycleMonth(now);
+    return true;
+  }
   function restoreSafetyBackup(){
     const raw=localStorage.getItem(SAFETY_BACKUP_KEY);if(!raw)return toast('No hay estado anterior disponible');
     if(!confirm('¿Recuperar el estado anterior? El estado actual quedará guardado como copia de seguridad.'))return;
-    try{const previous=normalizeState(JSON.parse(raw));createSafetySnapshot();state=previous;saveState({snapshot:false});selectedMonth=currentCycleMonth(now);render();analyticsTrackFeature('restore-safety');toast('Estado anterior recuperado');}catch{toast('La copia local anterior no es válida');}
+    try{const previous=validateBackupObject(JSON.parse(raw));if(!commitRestoredState(previous))return;render();analyticsTrackFeature('restore-safety');toast('Estado anterior recuperado');}catch{toast('La copia local anterior no es válida');}
   }
   function actionGuard(key,ms=900){const t=Date.now(),until=actionLocks.get(key)||0;if(t<until)return false;actionLocks.set(key,t+ms);return true;}
   function customCategories(type){ return (state.customCategories||[]).filter(c=>c.type===type).map(c=>[c.name,escapeHtml(c.icon||'✦')]); }
@@ -1335,7 +1356,7 @@ button{cursor:pointer}
       const text=await file.text();
       if(file.name.toLowerCase().endsWith('.json')){
         const imported=JSON.parse(text),next=validateBackupObject(imported);if(!confirm(`¿Restaurar esta copia? Contiene ${next.transactions.length} movimientos. El estado actual quedará guardado para recuperación.`))return;
-        createSafetySnapshot();state=next;saveState({snapshot:false});selectedMonth=currentCycleMonth(now);el('import-dialog').close();render();analyticsTrackFeature('restore-json');toast('Copia de seguridad restaurada');return;
+        if(!commitRestoredState(next))return;el('import-dialog').close();render();analyticsTrackFeature('restore-json');toast('Copia de seguridad restaurada');return;
       }
       const rows=parseCSV(text);if(rows.length<2)throw new Error('CSV vacío');const headers=rows[0].map(normalizeHeader);
       const hasDate=headers.some(h=>['date','fecha'].includes(h)),hasAmount=headers.some(h=>['amount','importe','cantidad','convertedamount','importeconvertido'].includes(h));if(!hasDate||!hasAmount)throw new Error('No se reconocen las columnas de fecha e importe');

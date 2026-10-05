@@ -1,4 +1,4 @@
-const CACHE='ledger-app-beta-1-4-2';
+const CACHE='ledger-app-beta-1-4-2-recovery-1';
 const CACHE_PREFIX='ledger-app-';
 const CORE=['./','./index.html','./manifest.webmanifest','./ledger-icon-192-v2.png','./ledger-icon-512-v2.png','./ledger-apple-touch-v2.png','./posthog-stub.js','./posthog-bridge.js','./arx-analytics-guard.js','./i18n.js'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));

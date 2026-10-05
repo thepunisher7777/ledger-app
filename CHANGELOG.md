@@ -42,3 +42,10 @@
 - Conservada la clave `flowfi.public.v27`.
 - Conservado el puente seguro de migración FlowFi → Ledger.
 - La nueva Ledger abre automáticamente el restaurador cuando llega desde `?migration=flowfi`.
+
+### Beta 1.4.2 recovery follow-up — 2026-10-05
+
+- Prevent false successful backup restore when local persistence fails; preserve previous memory and safety recovery snapshot.
+- Validate local safety copies before recovery and clear stale editing/undo state after success.
+- Add full exported-backup recovery comparisons for a recurring bill, paid loan and payday-based cycle across all six languages, including fresh startup and repeated restore.
+- Refresh the PWA shell cache for the recovery fix.

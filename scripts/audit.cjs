@@ -3,7 +3,7 @@ const {JSDOM}=require(process.env.LEDGER_JSDOM_PATH||'jsdom');
 const fs=require('node:fs'),assert=require('node:assert/strict'),path=require('node:path');
 const root=path.resolve(__dirname,'..');
 const source=fs.readFileSync(path.join(root,'index.html'),'utf8');
-const exposed=['parseMoney','normalizeDate','normalizeState','validateBackupObject','defaultState','accountBalanceTotal','accountProjectedBalance','simulateLoan','cycleBounds','currentCycleMonth','setRoute','render','openTransaction','saveTransaction','openRecurring','saveRecurring','openGoal','saveGoal','openLiability','saveLiability','openBudget','saveBudget','runImport','parseCSV','exportCSV','exportExcel','exportJSON','applyLiabilityPayment','reverseLiabilityPayment','restoreLiabilityPaymentFromTx'];
+const exposed=['parseMoney','normalizeDate','normalizeState','validateBackupObject','defaultState','accountBalanceTotal','accountProjectedBalance','simulateLoan','cycleBounds','currentCycleMonth','setRoute','render','openTransaction','saveTransaction','openRecurring','saveRecurring','openGoal','saveGoal','openLiability','saveLiability','openBudget','saveBudget','runImport','parseCSV','exportCSV','exportExcel','exportJSON','applyLiabilityPayment','reverseLiabilityPayment','restoreLiabilityPaymentFromTx','restoreSafetyBackup'];
 let html=source.replace(/<script src="[^"]+"><\/script>/g,'').replace('render();analyticsMaybeAsk();maybeStartFlowFiMigration();if(bootRecoveryNotice)',`window.audit={${exposed.join(',')},getState:()=>state,setState:s=>state=s};render();if(bootRecoveryNotice)`);
 let passed=0;function check(name,fn){fn();passed++;console.log('[OK]',name)}
 (async()=>{for(const lang of ['es','en','fr','de','it','pt']){
@@ -38,5 +38,37 @@ await a.runImport();check(`${lang}: CSV import rejects invalid rows`,()=>assert.
 let downloaded;w.downloads=[];w.URL.createObjectURL=b=>{downloaded=b;return'blob:synthetic'};
 check(`${lang}: storage persistence contains synthetic data only`,()=>{const stored=JSON.parse(w.localStorage.getItem('flowfi.public.v27'));assert.equal(stored.transactions.length,3);assert.ok(stored.transactions.every(t=>t.note.startsWith('Synthetic')))});
 const before=JSON.stringify(a.getState());Object.defineProperty(d.getElementById('import-file'),'files',{configurable:true,value:[{name:'bad.json',text:async()=>JSON.stringify({settings:{},transactions:[],budgets:null})}]});await a.runImport();check(`${lang}: failed JSON restore preserves current data`,()=>assert.equal(JSON.stringify(a.getState()),before));
+// End-to-end export payload and restore through the actual import handler.
+await new Promise(r=>setTimeout(r,950));
+a.setState(a.normalizeState(a.defaultState()));a.setRoute('settings');
+input('cycle-start-day','15');d.getElementById('cycle-start-day').dispatchEvent(new w.Event('change'));
+a.openRecurring();input('rec-name','Synthetic recovery bill');input('rec-amount','49.99');input('rec-day','20');a.saveRecurring();
+a.setRoute('plan');d.querySelector('[data-pay-rec]').click();
+a.openLiability();input('liability-name','Synthetic recovery loan');input('liability-principal','1200');input('liability-balance','1200');input('liability-payment','110');input('liability-interest','12');a.saveLiability();
+a.openTransaction('expense');input('tx-amount','110');input('tx-date','2026-10-05');input('tx-liability-link',a.getState().liabilities[0].id);a.saveTransaction();
+a.openTransaction('income');input('tx-amount','2100');input('tx-date','2026-10-15');input('tx-note','Synthetic payday');a.saveTransaction();
+const expected=JSON.parse(JSON.stringify(a.normalizeState(a.getState()))), balance=a.accountBalanceTotal();
+a.exportJSON();const backupText=await new Promise((resolve,reject)=>{const reader=new w.FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsText(downloaded)});
+const payload=JSON.parse(backupText);check(`${lang}: exported backup contains complete scenario`,()=>{assert.equal(payload.recurring[0].amount,49.99);assert.equal(payload.liabilities[0].balance,1102);assert.equal(payload.liabilities[0].paymentHistory[0].interest,12);assert.equal(payload.settings.cycleStartDay,15)});
+a.setState(a.normalizeState(a.defaultState()));a.setRoute('settings');
+Object.defineProperty(d.getElementById('import-file'),'files',{configurable:true,value:[{name:'recovery.json',text:async()=>backupText}]});await a.runImport();
+const finance=s=>{const copy=JSON.parse(JSON.stringify(s));delete copy._meta;return copy};
+check(`${lang}: actual restore preserves all financial fields`,()=>assert.deepEqual(finance(a.getState()),expected));
+check(`${lang}: restored balance, payday cycle and persistence`,()=>{assert.equal(a.accountBalanceTotal(),balance);const b=a.cycleBounds(new w.Date(2026,10,1));assert.equal(b.startISO,'2026-10-15');assert.equal(b.endISO,'2026-11-14');assert.deepEqual(finance(JSON.parse(w.localStorage.getItem('flowfi.public.v27'))),expected)});
+await a.runImport();check(`${lang}: repeat restore does not duplicate bill or loan payments`,()=>assert.deepEqual(finance(a.getState()),expected));
+// Reload in a fresh document using only the synthetic persisted storage.
+const persisted=w.localStorage.getItem('flowfi.public.v27');
+const fresh=new JSDOM(html,{url:'http://ledger.test/',runScripts:'dangerously',beforeParse(v){v.localStorage.setItem('flowfi.public.v27',persisted);v.matchMedia=()=>({matches:false,addEventListener(){}});v.scrollTo=()=>{};v.confirm=()=>true;}});
+check(`${lang}: fresh startup preserves restored bill, loan and cycle`,()=>assert.deepEqual(finance(fresh.window.audit.getState()),expected));fresh.window.close();
+a.setRoute('settings');a.restoreSafetyBackup();check(`${lang}: local safety recovery remains valid`,()=>assert.deepEqual(finance(a.getState()),expected));
+// A storage write failure must not report successful recovery or replace memory.
+a.setState(a.normalizeState(a.defaultState()));a.setRoute('settings');const beforeQuota=JSON.stringify(a.getState());
+const safetyKey=Object.keys(w.localStorage).find(k=>k.includes('safety'));const safetyBefore=w.localStorage.getItem(safetyKey);
+const originalSet=w.Storage.prototype.setItem;w.Storage.prototype.setItem=function(key,value){if(key==='flowfi.public.v27')throw new w.DOMException('Synthetic quota','QuotaExceededError');return originalSet.call(this,key,value)};
+await a.runImport();w.Storage.prototype.setItem=originalSet;
+check(`${lang}: restore storage failure preserves previous in-memory state`,()=>assert.equal(JSON.stringify(a.getState()),beforeQuota));
+check(`${lang}: failed restore preserves safety snapshot`,()=>assert.equal(w.localStorage.getItem(safetyKey),safetyBefore));
+w.confirm=()=>false;await a.runImport();check(`${lang}: cancelled restore preserves current state`,()=>assert.equal(JSON.stringify(a.getState()),beforeQuota));w.confirm=()=>true;
+w.localStorage.setItem(safetyKey,JSON.stringify({settings:{},transactions:[],budgets:null}));a.restoreSafetyBackup();check(`${lang}: corrupt local safety rejected without mutation`,()=>assert.equal(JSON.stringify(a.getState()),beforeQuota));
 await new Promise(r=>setTimeout(r,0));assert.equal(d.documentElement.lang,lang);dom.window.close();
 }console.log(`\n${passed} synthetic regression checks passed.`);})().catch(e=>{console.error(e);process.exitCode=1});
