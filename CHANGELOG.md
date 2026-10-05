@@ -1,5 +1,19 @@
 # Changelog
 
+## Beta 1.5.0 — Multidivisa (2026-10-05)
+
+- Cuentas EUR/USD con saldos, movimientos, conciliación y movimientos fijos en su divisa original.
+- Moneda base EUR/USD para resúmenes, patrimonio, préstamos, compromisos y objetivos vinculados. El cambio de base no reescribe importes originales. Los presupuestos y el ahorro mensual antiguos siguen denominados en EUR.
+- Cambio diario de referencia BCE vía Frankfurter, actualización automática opcional, caché local y tipo manual. Se muestra fuente/fecha; sin tipo válido no se inventa una equivalencia. Valoraciones históricas usan el último cambio guardado, no tipos históricos.
+- Transferencias con importe enviado y recibido, respetando el cambio real introducido y excluidas de ingresos/gastos.
+- Gráficas de ingresos/gastos y evolución de saldo desde conciliación por cuenta, filtros de cuenta/divisa y saldos agrupados sin sumar EUR con USD.
+- CSV con divisas, ambos importes de transferencia y repartos. Importación preparada en memoria y persistida de forma atómica; rechaza monedas incompatibles y mantiene deduplicación.
+- Excel incorpora moneda base, tipo/fecha y divisas originales.
+- Portfolio Performance XML: vista previa local de cuentas EUR/USD y efectivo, escala de importes comprobada y avisos de valores/transferencias/referencias no mapeados. **Todavía no importa ni reconstruye una cartera de valores**; no modifica datos existentes.
+- Conservados `flowfi.public.v27`, esquema 2, backups JSON, recuperación local y migración FlowFi. Campos nuevos aditivos; copias antiguas EUR siguen funcionando en esta versión. No se garantiza abrir nuevas copias multidivisa en versiones antiguas.
+- Sin login obligatorio ni sincronización activada. CI incluye las regresiones existentes, pruebas multidivisa/XML y service worker.
+
+
 ## Beta 1.4.2 — Audit fixes — 2026-10-05
 
 - Reject impossible dates and non-finite transaction amounts.

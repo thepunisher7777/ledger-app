@@ -38,3 +38,13 @@ Tests capture and read the actual JSON export Blob, restore it through the impor
 A reproduced storage failure previously changed in-memory state and displayed a successful restore despite failing to persist it. JSON restore and local safety recovery now share a persistence-aware commit: preserve the previous safety snapshot, cancel on snapshot failure, roll back memory and the safety snapshot when the finance write fails, and show success only after persistence. Local safety recovery now uses the same strict backup validation. Successful recovery clears stale editing, calendar and undo state. The service-worker cache is refreshed for this patch.
 
 Checks additionally cover cancelled restore, malformed local safety copies, and preservation of the previous state and safety snapshot during a simulated storage quota failure. `npm test` passes 216 functional regression groups plus the four service-worker assertions; release smoke checks pass. Chromium download again returned an invalid archive, so real-browser layout, touch, native downloads and device PWA behavior remain unverified. No real financial data was accessed.
+
+## Beta 1.5.0 — multidivisa (2026-10-05)
+
+Datos ficticios exclusivamente. Se mantienen las 216 comprobaciones funcionales en seis idiomas. Añadidas 25 pruebas específicas EUR/USD/XML y la auditoría del service worker; smoke de versión, privacidad, migración y PWA aprobado.
+
+Verificado: conversiones en ambos sentidos, cambio de moneda base sin reescribir importes, patrimonio y deuda, ambas patas de transferencia, importe recibido real, rechazo de cuota en divisa distinta, fijos USD, gráficas/filtros nativos, ausencia de cambio sin equivalencia inventada, restauración de backups antiguos EUR y nuevos campos aditivos, CSV con divisas y deduplicación, exportación/reimportación, XML malformado/entidades/fechas, vista previa sin mutaciones, error de red, respuesta de cambio invertida y cuota de almacenamiento.
+
+El endpoint público BCE/Frankfurter respondió con estructura `date/base/quote/rate` y el mismo contrato validado por el runtime. Los tests usan respuestas simuladas para evitar dependencia de red y enviar solo datos ficticios.
+
+Límites: XML se prepara como vista previa, sin importación de carteras; no hay valoración bursátil ni FX histórico. Gráficas de saldo empiezan en conciliación y siguen el orden de registro. La instalación PWA y los gestos en iPhone físico requieren verificación en ese dispositivo.
