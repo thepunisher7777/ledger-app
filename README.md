@@ -1,8 +1,8 @@
-# LEDGER by ARX · Beta 1.4.1 — International hotfix
+# LEDGER by ARX · Beta 1.4.2 — International hotfix
 
 PWA local-first de finanzas personales.
 
-## Beta 1.4
+## Beta 1.4.2
 - Selector de idioma en Ajustes.
 - Modo Automático según el idioma del dispositivo.
 - Español, English, Français, Deutsch, Italiano y Português.
@@ -14,6 +14,6 @@ PWA local-first de finanzas personales.
 
 App: https://thepunisher7777.github.io/ledger-app/
 
-## Beta 1.4.1
+## Beta 1.4.2
 - Hotfix de traducciones mixtas en textos dinámicos y tarjetas de Inicio, Estadísticas, Plan y Ajustes.
 - Traducción de etiquetas de sistema dentro de líneas combinadas sin modificar los datos guardados.

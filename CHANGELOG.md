@@ -1,5 +1,18 @@
 # Changelog
 
+## Beta 1.4.2 — Audit fixes — 2026-10-05
+
+- Reject impossible dates and non-finite transaction amounts.
+- Validate backup structures before replacing financial state.
+- Clear split allocations when converting an expense into a transfer.
+- Include transfers in account totals when reconciliation anchors differ.
+- Cap simulated one-off repayment at outstanding principal.
+- Preserve custom categories linked to recurring payments or budgets.
+- Escape custom icons and imported source labels before rendering.
+- Isolate service-worker caching to successful same-origin responses.
+- Add synthetic DOM regression coverage across all six languages.
+
+
 ## Beta 1.4.1 — International hotfix — 2026-10-05
 
 - Corregidos textos españoles residuales al usar English, Français, Deutsch, Italiano y Português.
