@@ -1,3 +1,11 @@
+## Beta 1.6.0 Couple Preview 2 — 2026-10-10
+
+- Identidad Pareja con usuario/contraseña y recuperación mediante secreto de 256 bits, sin SMTP ni Brevo.
+- Invitaciones por enlace/código mantienen aceptación explícita, caducidad y separación Personal/Pareja.
+- Endpoint server-only con límites persistentes y RPC administrativas inaccesibles a clientes.
+- Recuperación rota el código y revoca sesiones antiguas; conserva el UUID y el espacio.
+- Pruebas de permisos, recuperación y acceso HTTP con usuarios ficticios. Producción permanece intacta.
+
 # Changelog
 
 ## Beta 1.6.0 Couple Preview 1 — 2026-10-09 (no publicada)

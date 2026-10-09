@@ -15,12 +15,13 @@ for (const file of [
   'couple.css',
   'couple-core.js',
   'couple-sync.js',
+  'couple-auth.js',
   'couple-ui.js',
   'couple-invite.js',
   'vendor/supabase.js',
 ])
   assert.ok(source.includes("'./" + file + "'"));
-for (const name of ['couple-core.js', 'couple-sync.js', 'couple-ui.js'])
+for (const name of ['couple-core.js', 'couple-sync.js', 'couple-ui.js', 'couple-auth.js'])
   assert.ok(!fs.readFileSync(path.join(root, name), 'utf8').includes('flowfi.public.v27'));
 console.log(
   '[OK] SDK/license match pinned official package; PWA assets included; Couple modules never access personal key',

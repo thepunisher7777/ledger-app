@@ -1,4 +1,4 @@
-# LEDGER by ARX · Beta 1.6.0 Couple Preview 1
+# LEDGER by ARX · Beta 1.6.0 Couple Preview 2
 
 Vista previa en `feature/couple-mode`; la app publicada permanece en Beta 1.5.0. Personal conserva datos y backups sin login. El nuevo selector Pareja requiere un backend Supabase autorizado para compartir datos reales: no hay conexión configurada ni datos simulados en la aplicación.
 
@@ -35,3 +35,7 @@ En Ajustes, crea cuentas EUR o USD y elige la moneda base. En Estadísticas, «C
 El importador XML de Portfolio Performance ofrece una **vista previa sin escritura**. Lee cuentas EUR/USD y movimientos de efectivo; señala valores, referencias y transferencias que necesitan mapeo. No importa posiciones ni rentabilidad de inversiones. Usa JSON para una copia completa de Ledger; CSV exporta movimientos y Excel incluye sus denominaciones.
 
 Sin login obligatorio. La sincronización futura será opcional.
+
+### Acceso Pareja sin correo
+
+Preview 2 permite crear una identidad con usuario y contraseña, guardar un código secreto de recuperación y compartir una invitación por enlace/código. No necesita Brevo ni SMTP. El acceso y la recuperación ya se han probado contra Supabase real con identidades ficticias. Personal no requiere registro ni se sincroniza. La rama de vista previa aún debe validarse visualmente en Safari/iPhone antes de sustituir producción. Véase [configuración](docs/COUPLE_SETUP.md).

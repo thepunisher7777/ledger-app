@@ -44,3 +44,7 @@ Pareja almacena en servidor datos compartidos, UUID de miembros y autor/editor, 
 Configuración pública: `ledger.couple.config.v1`; caché y cola por proyecto/usuario/espacio `ledger.couple.cache.v1:*`; puntero de caché `ledger.couple.last.v1:*`. Comprobantes locales para evitar copiar dos veces: `ledger.couple.copy-receipts.v1`, sin subir identificadores originales. Sesión en memoria salvo elección de mantenerla, que almacena tokens Auth en `ledger.couple.auth.v1:<proyecto>`. Caché bloqueada después de 15 minutos sin verificar; logout o revocación detectada elimina esa caché. Archivos ya exportados no pueden revocarse a distancia.
 
 Abandonar cierra escrituras y revoca al saliente; el restante conserva lectura/exportación del archivo compartido. No se transfieren ni borran datos personales. Historial cerrado permanece hasta un procedimiento autorizado de eliminación conjunta, sin purga automática. [Políticas completas](docs/COUPLE_SECURITY.md).
+
+## Identidad Pareja sin correo
+
+El servidor del espacio Pareja almacena el nombre de usuario, identificador Auth y hash de un código aleatorio de recuperación. Supabase Auth procesa la contraseña. No se requiere dirección de correo real para este flujo; `ledger-users.invalid` es un identificador técnico. Los límites de alta/recuperación conservan temporalmente un hash de IP y contadores durante una hora. El código original no se guarda en Ledger ni se incorpora a backups. Al recuperar se revocan sesiones y rota el código; las finanzas Personal no se envían a este endpoint.

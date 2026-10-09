@@ -35,5 +35,5 @@ jobs:
       - name: Install audit dependencies
         run: npm ci --ignore-scripts
 
-      - name: Regressions, multicurrency, XML and Couple privacy gate
+      - name: Regressions, multicurrency, XML, Couple privacy and no-email identity
         run: npm test

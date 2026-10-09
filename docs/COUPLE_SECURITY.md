@@ -64,3 +64,11 @@ Conservación: los registros cerrados y auditoría permanecen hasta petición ex
 ## Puerta de publicación
 
 Las pruebas SQL/HTTP local son obligatorias en CI. Antes de producción deben añadirse evidencia de Supabase alojado (JWT, OTP, PostgREST, Realtime, usuarios A/B/C), cierre de sesión/revocación real y Safari/PWA en iPhone. No fusionar por aprobar únicamente DOM/PGlite; no configurar producción con credenciales de pruebas. No habilitar servicios de pago sin autorización.
+
+## Identidad sin correo (Preview 2)
+
+El cliente inicia sesión con contraseña mediante Supabase Auth; el nombre normalizado corresponde a un identificador reservado `@ledger-users.invalid`, no a un correo entregable. El alta admin.confirm no afirma que exista un buzón: valida una identidad propia de Ledger. El endpoint público `couple-identity` solo permite register/recover; no recibe IDs de usuarios, espacios ni datos financieros. Registro/recovery tienen límites persistentes por IP/usuario/global. Las contraseñas las procesa Supabase Auth, nunca una tabla Ledger.
+
+`ledger_private.identities` conserva UUID, usuario y SHA-256 del secreto aleatorio de recuperación (256 bits); nunca el código original. Sin grants ni políticas de lectura/escritura para anon/authenticated. Solo RPC service_role con search_path vacío. La recuperación compara y rota el hash atómicamente, revoca auth.sessions antes y después de cambiar la contraseña por Admin API. Las políticas financieras verifican sesión activa, por lo que JWT antiguos quedan sin acceso. Un fallo parcial requiere reintentar con el nuevo código ya guardado; no hay recuperación a través de la pareja. No se migran cuentas OTP anteriores automáticamente.
+
+Límite pendiente para publicación masiva: CAPTCHA/rate limiting distribuido más resistente a abuso y protección de contraseñas filtradas (actualmente no habilitada). UI nunca guarda ni envía el secreto de recuperación a almacenamiento/analytics; se muestra para guardarlo conscientemente. El servidor recibe secretos solo por HTTPS, no los registra ni los devuelve. Las invitaciones siguen siendo independientes de las credenciales y conservan sus permisos/caducidad.

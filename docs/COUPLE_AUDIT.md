@@ -1,3 +1,9 @@
+# Estado actualizado — 2026-10-10, Preview 2
+
+Se sustituye el flujo público OTP por usuario/contraseña y código de recuperación guardado conscientemente. No depende de SMTP ni Brevo. Endpoint real `couple-identity` desplegado en el proyecto autorizado; registro, login, invitación entre dos usuarios, recuperación, rechazo de código inválido/consumido, contraseña antigua y JWT revocado validados por HTTP. Los apartados OTP siguientes describen la auditoría y decisiones anteriores, ahora reemplazadas por este flujo. No se migran identidades existentes ni datos personales.
+
+`npm test` incluye las regresiones anteriores más las pruebas de identidad/recuperación y permisos server-only. Advisors no señalan funciones administrativas de identidad accesibles a anon/authenticated; los avisos de RPC financieras privilegiadas son intencionales y sus guards se prueban. Las tablas privadas sin políticas deniegan acceso por diseño. Protección de contraseñas filtradas no habilitada; pendiente CAPTCHA para lanzamiento amplio y Safari/iPhone físico. Producción intacta.
+
 # Ledger Couple — auditoría y arquitectura
 
 Fecha: 2026-10-09. Rama: `feature/couple-mode`. Estado: **vista previa; sin despliegue de producción**.
@@ -55,8 +61,8 @@ La seguridad local comparte la limitación del Ledger original: una persona con 
 
 ## Pendientes explícitos
 
-1. Configurar correo autorizado para OTP público; las 12 comprobaciones alojadas Auth/HTTP/Realtime ya pasaron.
-2. Superar aceptación de correo y móvil antes de fusionar/publicar.
+1. Alta/login/recuperación sin correo implementados y validados en el backend de pruebas. Las 12 comprobaciones anteriores Auth/HTTP/Realtime y la nueva aceptación sin correo pasaron.
+2. Superar aceptación visual en Safari/iPhone físico antes de fusionar/publicar sobre producción.
 3. Restauración entre espacios distintos, cambio de miembros y cambio de moneda base no permitidos en esta versión.
 4. Recurrentes se registran conscientemente; no se ejecutan solos en servidor.
 5. No se incorporan sincronización Personal, bancos, push ni adjuntos.

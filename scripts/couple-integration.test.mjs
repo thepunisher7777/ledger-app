@@ -14,7 +14,7 @@ const A = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
   B = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
   C = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
 const db = new PGlite({ extensions: { pgcrypto } });
-await db.exec(`create schema auth; create schema extensions; create role anon; create role authenticated;
+await db.exec(`create schema auth; create schema extensions; create role service_role; create role anon; create role authenticated;
  create table auth.users(id uuid primary key); insert into auth.users values('${A}'),('${B}'),('${C}');
  create table auth.sessions(id uuid primary key,user_id uuid not null,not_after timestamptz);insert into auth.sessions(id,user_id)select id,id from auth.users;
  create function auth.jwt() returns jsonb language sql stable as $$select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb$$;grant execute on function auth.jwt() to anon,authenticated;

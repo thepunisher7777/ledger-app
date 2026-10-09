@@ -98,34 +98,27 @@
       render(tab);
     });
   }
-  function login() {
+  function login(mode = 'login') {
+    const signup = mode === 'register', recover = mode === 'recover';
+    const code = signup || recover ? window.LedgerCoupleAuth.recoveryCode() : '';
     form(
-      `<h2>Identidad para Pareja</h2><p>Solo el espacio compartido requiere iniciar sesión. El correo se envía al proyecto Supabase configurado.</p>${field('email', 'Correo electrónico', '', 'email')}`,
-      'Enviar código',
+      `<h2>${signup ? 'Crear identidad Pareja' : recover ? 'Recuperar acceso' : 'Entrar en Pareja'}</h2><p>Sin correo. Personal sigue funcionando sin registro.</p>${field('username', 'Nombre de usuario')}${recover ? field('recoveryCode', 'Código de recuperación anterior') : ''}${field('password', recover ? 'Nueva contraseña (mínimo 12 caracteres)' : 'Contraseña', '', 'password')}${signup || recover ? `${field('repeat', 'Repite la contraseña', '', 'password')}<p>Guarda este nuevo código antes de continuar. Permite recuperar tu cuenta; no lo compartas con tu pareja ni lo confundas con la invitación.</p><label>Código de recuperación<input readonly value="${code}"></label><label><input name="saved" type="checkbox" required> He guardado mi usuario y este código en un lugar seguro</label>` : ''}<p><button type="button" id="ce-auth-register">Crear cuenta</button> <button type="button" id="ce-auth-recover">Recuperar acceso</button> <button type="button" id="ce-auth-login">Ya tengo cuenta</button></p>`,
+      signup ? 'Crear cuenta y entrar' : recover ? 'Cambiar contraseña y entrar' : 'Entrar',
     );
+    $('ce-auth-register').onclick = () => login('register');
+    $('ce-auth-recover').onclick = () => login('recover');
+    $('ce-auth-login').onclick = () => login();
     submit(async (v) => {
-      const { error } = await client.auth.signInWithOtp({
-        email: v.email,
-        options: { shouldCreateUser: true },
-      });
-      if (error) throw error;
-      setTimeout(() => {
-        form(
-          `<h2>Verificar correo</h2>${field('email', 'Correo', v.email, 'email')}${field('code', 'Código recibido')}<p>Configura en Supabase la plantilla de correo con el código OTP.</p>`,
-          'Entrar',
-        );
-        submit(async (x) => {
-          const { error } = await client.auth.verifyOtp({
-            email: x.email,
-            token: x.code,
-            type: 'email',
-          });
-          if (error) throw error;
-          await sync.discover();
-          await sync.flush();
-          render(tab);
-        });
-      }, 0);
+      const A = window.LedgerCoupleAuth;
+      if (signup || recover) {
+        if (v.password !== v.repeat) throw Error('Las contraseñas no coinciden.');
+        if (v.saved !== 'on') throw Error('Guarda el código de recuperación antes de continuar.');
+        await A.identity(client, { action: mode, username: v.username, password: v.password, recoveryCode: v.recoveryCode, newRecoveryCode: code });
+      }
+      await A.login(client, v.username, v.password);
+      await sync.discover();
+      await sync.flush();
+      render(tab);
     });
   }
   function create() {
@@ -439,9 +432,9 @@
         head +
         card(
           'Conectar con tu pareja',
-          '<p>Inicia sesión únicamente para este espacio. No se subirán tus datos personales.</p><button class="primary-btn" id="ce-login">Entrar por correo</button> <button class="secondary-btn" id="ce-config">Cambiar conexión</button>',
+          '<p>Inicia sesión únicamente para este espacio. No se subirán tus datos personales.</p><button class="primary-btn" id="ce-login">Entrar / crear cuenta</button> <button class="secondary-btn" id="ce-config">Cambiar conexión</button>',
         );
-      $('ce-login').onclick = login;
+      $('ce-login').onclick = () => login();
       $('ce-config').onclick = configure;
       return;
     }

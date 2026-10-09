@@ -41,8 +41,10 @@ const fixture = {
   ],
   ledger_couple_activity: [],
 };
+let identityRequest, loginRequest;
 const client = {
-  auth: { getUser: async () => ({ data: { user: { id: A } } }), signOut: async () => {} },
+  functions: { invoke: async (name, v) => { identityRequest = { name, ...v.body }; return { data: { ok: true } }; } },
+  auth: { getUser: async () => ({ data: { user: { id: A } } }), signOut: async () => {}, signInWithPassword: async (v) => { loginRequest=v; return { error:null }; } },
   from(table) {
     const q = {
       select() {
@@ -71,6 +73,7 @@ const modules = [
   'portfolio-import.js',
   'couple-core.js',
   'couple-sync.js',
+  'couple-auth.js',
   'couple-ui.js',
 ];
 let html = fs
@@ -157,6 +160,29 @@ function check(name, fn) {
     d.querySelector('[name=key]').value = 'sb_publishable_fixture_for_dom_tests';
     d.getElementById('couple-form').dispatchEvent(new w.Event('submit', { cancelable: true }));
     await new Promise((r) => w.setTimeout(r, 0));
+    check('formulario real sin correo: registro y recuperación accesibles', () => {
+      d.getElementById('ce-login').click();
+      assert.equal(d.querySelector('[name=email]'), null);
+      d.getElementById('ce-auth-register').click();
+      assert.match(d.querySelector('input[readonly]').value, /^[a-f0-9]{64}$/);
+      d.getElementById('ce-auth-recover').click();
+      assert.ok(d.querySelector('[name=recoveryCode]'));
+      d.getElementById('ce-auth-register').click();
+    });
+    d.querySelector('[name=username]').value='ficticio_dom';
+    d.querySelector('[name=password]').value='FICTICIO-secret-password';
+    d.querySelector('[name=repeat]').value='FICTICIO-secret-password';
+    d.querySelector('[name=saved]').checked=true;
+    d.getElementById('couple-form').dispatchEvent(new w.Event('submit', { cancelable: true }));
+    await new Promise((r) => w.setTimeout(r, 0));
+    check('registro conecta endpoint y login sin guardar secretos ni tocar Personal', () => {
+      assert.equal(identityRequest.name,'couple-identity');
+      assert.equal(identityRequest.action,'register');
+      assert.equal(loginRequest.email,'ficticio_dom@ledger-users.invalid');
+      assert.equal(d.getElementById('couple-dialog').open,false);
+      for(let i=0;i<w.localStorage.length;i++)assert.ok(!w.localStorage.getItem(w.localStorage.key(i)).includes(identityRequest.newRecoveryCode));
+      assert.equal(w.localStorage.getItem('flowfi.public.v27'),original);
+    });
     const sync = w.LedgerCouple.getSync();
     sync.uuid = () => require('node:crypto').randomUUID();
     await sync.discover();
@@ -232,7 +258,7 @@ function check(name, fn) {
         v.supabase = {
           createClient: () => ({
             ...client,
-            auth: { getUser: async () => ({ data: { user: { id: B } } }), signOut: async () => {} },
+            auth: { getUser: async () => ({ data: { user: { id: B } } }), signOut: async () => {}, signInWithPassword: async (v) => { loginRequest=v; return { error:null }; } },
           }),
         };
         v.localStorage.setItem(

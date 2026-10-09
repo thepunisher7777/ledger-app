@@ -19,10 +19,10 @@ Abrir http://127.0.0.1:8080. En Personal comprobar datos ficticios, exportar y r
 2. Crear/usar proyecto Free, preferentemente región UE. Verificar que esté vacío o que esta migración no colisione con tablas existentes. Revisar la migración, no ejecutar sobre una base ajena sin autorización.
 3. Aplicar `supabase/migrations/202610090001_couple.sql` desde el SQL Editor o pipeline autorizado. La migración es transaccional, inicial y de una sola aplicación. No borra tablas previas ni contiene finanzas personales.
 4. Mantener Data API únicamente sobre los esquemas previstos; `ledger_private` NO debe exponerse. Comprobar grants/RLS y que `supabase_realtime` publique spaces/members/entities. La migración añade esas tablas si la publicación existe; no reemplaza otras publicaciones.
-5. Activar Email Auth con verificación. En plantillas Magic Link y Confirm Signup, incluir `{{ .Token }}` para código OTP; Ledger no procesa magic links en URL. Mantener expiración/rate limits de Auth conservadores.
-6. Para correo general configurar SMTP autorizado o un proveedor ya disponible; no contratarlo desde esta rama. El servicio de correo integrado de Supabase solo envía a direcciones preautorizadas del equipo y tiene límites reducidos: no basta para una pareja externa en producción.
+5. Mantener Email/Password Auth activado, pero el alta pública de Ledger se realiza mediante `couple-identity`. Aplicar todas las migraciones en orden y desplegar `supabase/functions/couple-identity/index.ts` con `verify_jwt=false`: este endpoint público de alta/recuperación valida entradas, límites persistentes y un secreto de recuperación. Las RPC administrativas solo conceden EXECUTE a service_role; nunca al cliente. La clave administrativa es una variable del runtime de Supabase, no se copia a la app.
+6. No se necesita SMTP, Brevo ni correo para este flujo. Supabase usa un identificador técnico bajo `ledger-users.invalid`, no una dirección de correo real. No se verifican buzones ni se envían códigos. Las identidades OTP anteriores no se fusionan ni se migran automáticamente.
 7. Copiar solo URL HTTPS del proyecto y clave pública publishable/anon. En Ledger: PAREJA → Configurar conexión. Nunca service-role ni contraseña de base de datos. La configuración queda local en cada dispositivo; repetir en el segundo. Mantener sesión es opcional y solo para dispositivos privados.
-8. A entra por correo, crea espacio, elige alias y EUR/USD. Genera un enlace privado que caduca en 24 h y pulsa Copiar enlace o Compartir. B abre el enlace en Ledger, entra con otra identidad y pulsa Aceptar invitación; el código se rellena sin realizar una vinculación automática. El código manual sigue disponible. Generar otra invitación revoca la anterior. El enlace por sí solo no sustituye la identificación segura.
+8. A crea usuario (4–32 caracteres a-z/0-9/_) y contraseña (12–128 caracteres), guarda el código de recuperación de 256 bits, crea espacio y elige alias y EUR/USD. Comparte por WhatsApp el enlace de invitación (caduca en 24 h). B abre el enlace, crea su propia identidad y acepta explícitamente. El código de recuperación NO se comparte con la pareja. La invitación no otorga acceso sin autenticación. Se siguen admitiendo códigos manuales. Generar otra invitación revoca la anterior.
 9. Registrar datos exclusivamente ficticios. No importar backups reales para las pruebas.
 
 ## Aceptación alojada antes de publicar
@@ -36,7 +36,7 @@ Abrir http://127.0.0.1:8080. En Personal comprobar datos ficticios, exportar y r
 - Invitar de nuevo revoca token anterior; un código consumido/caducado falla; un tercer miembro no puede entrar.
 - Logout limpia caché Pareja y preserva Personal. Abandonar revoca consultas/RPC del saliente incluso repitiendo una operación anterior; el restante tiene archivo cerrado de solo lectura.
 - Exportar ambos espacios y restaurar por separado. Reimportar Pareja no duplica; un backup de otro espacio se rechaza; un conflicto no sobrescribe el servidor.
-- iPhone Safari y PWA instalada: selector/rutas, teclado, formularios, modal, safe area, login OTP, offline y cierre de sesión. Revisar también escritorio.
+- iPhone Safari y PWA instalada: selector/rutas, teclado, formularios, modal, safe area, registro/login con contraseña y recuperación sin correo, offline y cierre de sesión. Revisar también escritorio.
 
 Guardar la evidencia en un informe de pruebas, sin tokens, emails reales, contraseñas ni balances reales en GitHub. Fusionar/publicar únicamente tras superar esa puerta. El CI no publica la app ni aplica SQL.
 
@@ -63,3 +63,9 @@ Fuentes primarias:
 ## Reversión
 
 La publicación original sigue en main. La rama puede descartarse sin tocar `flowfi.public.v27`. Si se habilita un backend de pruebas, primero exportar sus datos compartidos y retirar su uso en cliente; no ejecutar DROP ni borrar historiales sin autorización explícita. El bundle previo y el historial Git permiten recuperar el código original. No confundir backup de código con datos locales de cada usuario.
+
+## Recuperación sin correo
+
+PAREJA → Entrar / crear cuenta → Recuperar acceso. Introducir usuario, código anterior y nueva contraseña. Guardar ANTES el nuevo código mostrado. La recuperación consume y rota el código anterior, revoca todas las sesiones y conserva el mismo usuario y pertenencia al espacio. Si se pierde la respuesta o falla el cambio de contraseña después de rotar el código, repetir con el nuevo código que ya se guardó. Sin contraseña ni código no existe recuperación por correo ni un atajo para que la pareja tome la identidad.
+
+El servicio limita altas/recuperaciones a 20 por IP/hora, 8 por usuario/hora y 100 globales/hora. Auth mantiene sus propios límites de login. Estos límites protegen el proyecto Free pero pueden limitar registros legítimos; antes de un lanzamiento amplio añadir CAPTCHA y revisar capacidad. No hay scheduler ni tareas periódicas; los contadores caducados se limpian al recibir peticiones. La protección de contraseñas filtradas de Supabase no está habilitada en este plan; el mínimo es 12 caracteres, se recomienda un gestor y contraseña única.
