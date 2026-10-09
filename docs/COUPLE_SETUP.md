@@ -1,0 +1,75 @@
+# Configuración y validación de Pareja
+
+Beta 1.6.0: publicación solicitada por el usuario tras probar la vista previa. Personal funciona sin backend/login. La conexión pública de Pareja está preparada; los pasos de infraestructura son para operadores o instalaciones propias.
+
+## Desarrollo local
+
+```sh
+npm ci --ignore-scripts
+python scripts/smoke_check.py
+npm test
+python -m http.server 8080 --bind 127.0.0.1
+```
+
+Abrir http://127.0.0.1:8080. En Personal comprobar datos ficticios, exportar y restaurar. En Pareja, sin configuración se indica el bloqueo; no se muestran balances ficticios como datos reales.
+
+## Backend autorizado
+
+1. Conectar la integración Supabase o proporcionar acceso administrativo a un **proyecto de pruebas autorizado**. La publicación incluye solo la URL y clave pública del proyecto autorizado; nunca credenciales administrativas. No crear un plan de pago.
+2. Crear/usar proyecto Free, preferentemente región UE. Verificar que esté vacío o que esta migración no colisione con tablas existentes. Revisar la migración, no ejecutar sobre una base ajena sin autorización.
+3. Aplicar `supabase/migrations/202610090001_couple.sql` desde el SQL Editor o pipeline autorizado. La migración es transaccional, inicial y de una sola aplicación. No borra tablas previas ni contiene finanzas personales.
+4. Mantener Data API únicamente sobre los esquemas previstos; `ledger_private` NO debe exponerse. Comprobar grants/RLS y que `supabase_realtime` publique spaces/members/entities. La migración añade esas tablas si la publicación existe; no reemplaza otras publicaciones.
+5. Mantener Email/Password Auth activado, pero el alta pública de Ledger se realiza mediante `couple-identity`. Aplicar todas las migraciones en orden y desplegar `supabase/functions/couple-identity/index.ts` con `verify_jwt=false`: este endpoint público de alta/recuperación valida entradas, límites persistentes y un secreto de recuperación. Las RPC administrativas solo conceden EXECUTE a service_role; nunca al cliente. La clave administrativa es una variable del runtime de Supabase, no se copia a la app.
+6. No se necesita SMTP, Brevo ni correo para este flujo. Supabase usa un identificador técnico bajo `ledger-users.invalid`, no una dirección de correo real. No se verifican buzones ni se envían códigos. Las identidades OTP anteriores no se fusionan ni se migran automáticamente.
+7. Copiar solo URL HTTPS del proyecto y clave pública publishable/anon. En Ledger: PAREJA → Configurar conexión. Nunca service-role ni contraseña de base de datos. La configuración queda local en cada dispositivo; repetir en el segundo. Mantener sesión es opcional y solo para dispositivos privados.
+8. A crea usuario (4–32 caracteres a-z/0-9/_) y contraseña (12–128 caracteres), guarda el código de recuperación de 256 bits, crea espacio y elige alias y EUR/USD. Comparte por WhatsApp el enlace de invitación (caduca en 24 h). B abre el enlace, crea su propia identidad y acepta explícitamente. El código de recuperación NO se comparte con la pareja. La invitación no otorga acceso sin autenticación. Se siguen admitiendo códigos manuales. Generar otra invitación revoca la anterior.
+9. Registrar datos exclusivamente ficticios. No importar backups reales para las pruebas.
+
+## Aceptación alojada antes de publicar
+
+- A y B tienen Personal distintos; C es un tercero sin vincular. A/B comparten solo su espacio, C no lee ni modifica aunque cambie UUID/cuerpo HTTP.
+- Petición anónima no lee datos y no llama RPC; escritura directa a tablas denegada.
+- A registra alquiler 1100 EUR 50/50: B debe 550. B liquida y desaparece la compensación sin duplicar gastos.
+- Crear fondo, aportaciones, gastos del fondo, presupuestos y objetivos; comprobar EUR/USD y tipos históricos.
+- Dos navegadores/dispositivos reciben cambios mediante Realtime; probar cola offline, respuesta perdida, edición y eliminación simultáneas, reconexión y conflicto visible.
+- Copiar Personal exige revisión y confirmación; notas, cuentas, IDs originales y otros datos no aparecen en Network ni en exportación Pareja.
+- Invitar de nuevo revoca token anterior; un código consumido/caducado falla; un tercer miembro no puede entrar.
+- Logout limpia caché Pareja y preserva Personal. Abandonar revoca consultas/RPC del saliente incluso repitiendo una operación anterior; el restante tiene archivo cerrado de solo lectura.
+- Exportar ambos espacios y restaurar por separado. Reimportar Pareja no duplica; un backup de otro espacio se rechaza; un conflicto no sobrescribe el servidor.
+- iPhone Safari y PWA instalada: selector/rutas, teclado, formularios, modal, safe area, registro/login con contraseña y recuperación sin correo, offline y cierre de sesión. Revisar también escritorio.
+
+Guardar la evidencia en un informe de pruebas, sin tokens, emails reales, contraseñas ni balances reales en GitHub. Fusionar/publicar únicamente tras superar esa puerta. El CI no publica la app ni aplica SQL.
+
+Hay un runner adicional `npm run test:couple:hosted` para un proyecto aislado y tres identidades ficticias precreadas. Requiere variables locales `COUPLE_E2E_URL`, `COUPLE_E2E_PUBLIC_KEY`, `COUPLE_E2E_A_EMAIL`, `COUPLE_E2E_A_PASSWORD` (también B/C) y `COUPLE_E2E_ALLOW_MUTATIONS=fictional-only`. No guardar sus valores en GitHub. El runner usa Auth/HTTP/Realtime reales, crea y cierra un espacio ficticio y conserva su auditoría; no hace borrado permanente. Si una identidad ya tiene un espacio accesible, aborta. Las 12 comprobaciones pasaron desde una función temporal protegida, ahora deshabilitada, en el proyecto de pruebas autorizado. No se ejecuta automáticamente en CI. Prueba OTP por separado en los dispositivos: el runner inicia sesión con contraseñas de pruebas.
+
+## Costes consultados el 2026-10-09
+
+- Código y hosting estático existente: no se añade infraestructura de servidor de la app; no se cambió el hosting actual.
+- Supabase Free: 0 USD/mes dentro de los límites del proveedor (500 MB de base, 50.000 MAU, 5 GB de egress; máximo dos proyectos activos y pausa tras una semana sin actividad). Adecuado para probar dos personas; no implica SLA ni backups de producción recuperables gestionados automáticamente.
+- Correo SMTP: depende del proveedor que se autorice; puede usar un plan gratuito si sus condiciones encajan. Actualmente **no configurado**.
+- Pro parte desde 25 USD/mes; no está contratado ni es requisito de esta implementación. Revisar límites y condiciones antes de elegirlo.
+- No IA de pago, cron externo, acceso bancario ni tareas automáticas de Work.
+
+Fuentes primarias:
+
+- https://supabase.com/pricing
+- https://supabase.com/docs/guides/auth/auth-smtp
+- https://supabase.com/docs/reference/javascript/auth-signinwithotp
+- https://supabase.com/docs/guides/auth/auth-email-passwordless
+- https://supabase.com/docs/guides/database/postgres/row-level-security
+- https://supabase.com/docs/guides/api/securing-your-api
+- https://supabase.com/docs/guides/realtime/postgres-changes
+
+## Reversión
+
+La publicación original sigue en main. La rama puede descartarse sin tocar `flowfi.public.v27`. Si se habilita un backend de pruebas, primero exportar sus datos compartidos y retirar su uso en cliente; no ejecutar DROP ni borrar historiales sin autorización explícita. El bundle previo y el historial Git permiten recuperar el código original. No confundir backup de código con datos locales de cada usuario.
+
+## Recuperación sin correo
+
+PAREJA → Entrar / crear cuenta → Recuperar acceso. Introducir usuario, código anterior y nueva contraseña. Guardar ANTES el nuevo código mostrado. La recuperación consume y rota el código anterior, revoca todas las sesiones y conserva el mismo usuario y pertenencia al espacio. Si se pierde la respuesta o falla el cambio de contraseña después de rotar el código, repetir con el nuevo código que ya se guardó. Sin contraseña ni código no existe recuperación por correo ni un atajo para que la pareja tome la identidad.
+
+El servicio limita altas/recuperaciones a 20 por IP/hora, 8 por usuario/hora y 100 globales/hora. Auth mantiene sus propios límites de login. Estos límites protegen el proyecto Free pero pueden limitar registros legítimos; antes de un lanzamiento amplio añadir CAPTCHA y revisar capacidad. No hay scheduler ni tareas periódicas; los contadores caducados se limpian al recibir peticiones. La protección de contraseñas filtradas de Supabase no está habilitada en este plan; el mínimo es 12 caracteres, se recomienda un gestor y contraseña única.
+
+## Publicación 2026-10-10
+
+El usuario confirmó que la vista previa funcionaba y autorizó integrarla en el Ledger habitual. La aplicación utiliza la conexión pública autorizada por defecto, sin copiar estados personales. Una configuración local explícita prevalece sobre la conexión predeterminada. La sesión por defecto no persiste tras cerrar la aplicación; puede optarse por recordarla en un dispositivo privado. No se afirma una prueba independiente en iPhone físico: la evidencia del usuario y las pruebas automatizadas se distinguen.

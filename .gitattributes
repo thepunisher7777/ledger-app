@@ -1,0 +1,2 @@
+# Keep the pinned upstream SDK byte-for-byte, including upstream whitespace.
+vendor/* linguist-vendored -whitespace

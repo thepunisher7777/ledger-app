@@ -16,6 +16,11 @@ REQUIRED = [
     "i18n.js",
     "money.js",
     "portfolio-import.js",
+    "couple-core.js",
+    "couple-sync.js",
+    "couple-ui.js",
+    "couple.css",
+    "vendor/supabase.js",
     "README.md",
     "PRIVACY.md",
     "CHANGELOG.md",
@@ -45,7 +50,7 @@ for name in REQUIRED:
     p = ROOT / name
     if not p.exists() or p.stat().st_size == 0:
         fail(f"Missing or empty required file: {name}")
-ok("Required Ledger Beta 1.5.0 files are present")
+ok("Required Ledger Beta 1.6.0 files are present")
 
 manifest = json.loads((ROOT / "manifest.webmanifest").read_text(encoding="utf-8"))
 for key, value in {
@@ -57,13 +62,13 @@ for key, value in {
 }.items():
     if manifest.get(key) != value:
         fail(f"manifest {key!r} must be {value!r}; got {manifest.get(key)!r}")
-if "Beta 1.5.0" not in manifest.get("description", ""):
-    fail("Manifest description must identify Beta 1.5.0")
+if "Beta 1.6.0" not in manifest.get("description", ""):
+    fail("Manifest description must identify Beta 1.6.0")
 ok("Manifest identity and project-page scope are stable")
 
 html = (ROOT / "index.html").read_text(encoding="utf-8")
 for marker in [
-    "const APP_VERSION = 'Beta 1.5.0';",
+    "const APP_VERSION = 'Beta 1.6.0';",
     "const STORAGE_KEY = 'flowfi.public.v27';",
     "https://arx.local/telemetry/ledger",
     "maybeStartFlowFiMigration",
@@ -127,7 +132,7 @@ ok("Internationalization is isolated from finance data and supports six language
 
 sw = (ROOT / "sw.js").read_text(encoding="utf-8")
 for marker in [
-    "ledger-app-beta-1-5-0",
+    "ledger-app-beta-1-6-0",
     "ledger-app-",
     "./posthog-stub.js",
     "./posthog-bridge.js",
@@ -140,7 +145,7 @@ for marker in [
         fail(f"Service worker invariant missing: {marker}")
 if "flowfi-ledger-migration-" in sw:
     fail("New Ledger service worker must not own FlowFi migration caches")
-ok("Ledger Beta 1.5.0 service worker cache namespace is isolated")
+ok("Ledger Beta 1.6.0 service worker cache namespace is isolated")
 
 bridge = (ROOT / "posthog-bridge.js").read_text(encoding="utf-8")
 for marker in [
@@ -190,7 +195,7 @@ ok("PWA icon dimensions are correct")
 
 metrics = (ROOT / "metrics.html").read_text(encoding="utf-8")
 if "Beta 1.5.0" not in metrics or "POSTHOG EU" not in metrics:
-    fail("metrics.html must describe Beta 1.5.0 / PostHog EU")
+    fail("metrics.html must describe Beta 1.6.0 / PostHog EU")
 for forbidden in ["localStorage.getItem('flowfi.public.v27')", "state.transactions", "state.liabilities"]:
     if forbidden in metrics:
         fail(f"metrics page must not access finance data: {forbidden}")
@@ -200,10 +205,10 @@ readme = (ROOT / "README.md").read_text(encoding="utf-8")
 privacy = (ROOT / "PRIVACY.md").read_text(encoding="utf-8")
 changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
 for label, doc in [("README", readme), ("CHANGELOG", changelog)]:
-    if "Beta 1.5.0" not in doc:
-        fail(f"{label} must identify Beta 1.5.0")
+    if "Beta 1.6.0" not in doc:
+        fail(f"{label} must identify Beta 1.6.0")
 if "ledger.ui.language.v1" not in privacy or "flowfi.public.v27" not in privacy:
     fail("PRIVACY must document UI-language storage and finance-state compatibility")
-ok("Release documentation matches Beta 1.5.0 International")
+ok("Release documentation matches Beta 1.6.0 International")
 
-print("\nLedger Beta 1.5.0 International smoke checks passed.")
+print("\nLedger Beta 1.6.0 International smoke checks passed.")

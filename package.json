@@ -2,10 +2,15 @@
   "name": "ledger-audit",
   "private": true,
   "scripts": {
-    "test": "node scripts/audit.cjs && node scripts/multicurrency-audit.cjs && node scripts/sw-audit.cjs"
+    "test": "node scripts/audit.cjs && node scripts/multicurrency-audit.cjs && node scripts/sw-audit.cjs && npm run test:couple",
+    "test:couple": "node scripts/couple-assets.test.cjs && node scripts/couple-invite.test.cjs && node --check couple-core.js && node --check couple-sync.js && node --check couple-ui.js && node scripts/couple-db.test.mjs && node scripts/couple-integration.test.mjs && node scripts/couple-ui.test.cjs && node scripts/couple-auth.test.cjs && node scripts/couple-auth-db.test.mjs",
+    "test:couple:hosted": "node scripts/couple-hosted.test.mjs",
+    "test:couple:password:hosted": "node scripts/couple-password-hosted.test.mjs"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.5.8",
+    "@supabase/supabase-js": "2.117.3",
     "jsdom": "30.1.2"
   },
-  "version": "1.5.0"
+  "version": "1.6.0"
 }

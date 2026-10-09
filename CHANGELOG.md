@@ -1,4 +1,32 @@
+## Beta 1.6.0 — 2026-10-10
+
+- Modo Pareja nativo disponible con conexión pública preparada, sin configuración técnica manual.
+- Usuario/contraseña, recuperación sin correo e invitación privada con caducidad.
+- Personal conserva almacenamiento, funcionalidades y backups; no se sincroniza automáticamente.
+- Publicación autorizada por el usuario tras probar la vista previa. Regresiones y permisos validados con datos ficticios.
+
+## Beta 1.6.0 Couple Preview 2 — 2026-10-10
+
+- Identidad Pareja con usuario/contraseña y recuperación mediante secreto de 256 bits, sin SMTP ni Brevo.
+- Invitaciones por enlace/código mantienen aceptación explícita, caducidad y separación Personal/Pareja.
+- Endpoint server-only con límites persistentes y RPC administrativas inaccesibles a clientes.
+- Recuperación rota el código y revoca sesiones antiguas; conserva el UUID y el espacio.
+- Pruebas de permisos, recuperación y acceso HTTP con usuarios ficticios. Producción permanece intacta.
+
 # Changelog
+
+## Beta 1.6.0 Couple Preview 1 — 2026-10-09 (no publicada)
+
+- Selector Personal/Pareja integrado en la app original. Personal, `flowfi.public.v27`, importaciones, backups y multidivisa permanecen independientes, sin login obligatorio.
+- Migración PostgreSQL con RLS, RPC autorizadas, dos miembros, invitaciones privadas de 256 bits/24 horas y auditoría con autor/editor servidor.
+- Autorización verifica sesión Auth viva y su propietario, además de membresía: un JWT anterior no conserva acceso después de logout. Rechaza sesiones expiradas y anónimas.
+- Movimientos, repartos exactos, fondos, aportaciones, compensaciones sin doble gasto, presupuestos, objetivos, estadísticas y registro consciente de reglas recurrentes.
+- Cola local por proyecto/usuario/espacio, UUID/idempotencia, CAS y propuestas de conflicto separadas; caché offline hasta 15 minutos desde verificar acceso, sesión persistente opt-in.
+- Copia personal saneada con revisión/confirmación. Exportación y restauración Pareja del mismo espacio con revisión, deduplicación y control de versiones; cierre/revocación sin tocar datos personales.
+- CI amplía regresiones con autorización PostgreSQL, dos clientes/HTTP local, contabilidad, offline, conflictos y DOM. SDK Supabase oficial fijado y servido localmente.
+- Enlace privado de invitación con botones copiar/compartir, caducidad de 24 horas y aceptación explícita tras autenticación. El token se retira de la URL antes de inicializar analíticas.
+- Proyecto de pruebas Supabase Free configurado; 12 comprobaciones alojadas Auth/HTTP/Realtime aprobadas. Conflictos de negocio devuelven HTTP 409 y no desencadenan reintentos de serialización.
+- Pendiente SMTP para OTP público y aceptación Safari/iPhone. No despliegue de producción, automatizaciones Work ni servicios de pago.
 
 ## Beta 1.5.0 — Multidivisa (2026-10-05)
 
