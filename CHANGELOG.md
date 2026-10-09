@@ -9,7 +9,9 @@
 - Cola local por proyecto/usuario/espacio, UUID/idempotencia, CAS y propuestas de conflicto separadas; caché offline hasta 15 minutos desde verificar acceso, sesión persistente opt-in.
 - Copia personal saneada con revisión/confirmación. Exportación y restauración Pareja del mismo espacio con revisión, deduplicación y control de versiones; cierre/revocación sin tocar datos personales.
 - CI amplía regresiones con autorización PostgreSQL, dos clientes/HTTP local, contabilidad, offline, conflictos y DOM. SDK Supabase oficial fijado y servido localmente.
-- Pendiente proyecto Supabase autorizado, correo OTP y aceptación alojada/móvil. No despliegue de producción, automatizaciones Work ni servicios de pago.
+- Enlace privado de invitación con botones copiar/compartir, caducidad de 24 horas y aceptación explícita tras autenticación. El token se retira de la URL antes de inicializar analíticas.
+- Proyecto de pruebas Supabase Free configurado; 12 comprobaciones alojadas Auth/HTTP/Realtime aprobadas. Conflictos de negocio devuelven HTTP 409 y no desencadenan reintentos de serialización.
+- Pendiente SMTP para OTP público y aceptación Safari/iPhone. No despliegue de producción, automatizaciones Work ni servicios de pago.
 
 ## Beta 1.5.0 — Multidivisa (2026-10-05)
 

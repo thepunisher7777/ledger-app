@@ -16,6 +16,7 @@ for (const file of [
   'couple-core.js',
   'couple-sync.js',
   'couple-ui.js',
+  'couple-invite.js',
   'vendor/supabase.js',
 ])
   assert.ok(source.includes("'./" + file + "'"));

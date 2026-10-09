@@ -66,6 +66,7 @@ const client = {
   rpc: async () => ({ error: { message: 'Fixture is read only' } }),
 };
 const modules = [
+  'couple-invite.js',
   'money.js',
   'portfolio-import.js',
   'couple-core.js',

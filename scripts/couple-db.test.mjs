@@ -11,12 +11,10 @@ let n = 0;
 await db.exec(
   `create schema auth;create schema extensions;create role anon;create role authenticated;create table auth.users(id uuid primary key);insert into auth.users values('${A}'),('${B}'),('${C}');create table auth.sessions(id uuid primary key,user_id uuid not null,not_after timestamptz);insert into auth.sessions(id,user_id)select id,id from auth.users;create function auth.jwt() returns jsonb language sql stable as $$select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb$$;grant execute on function auth.jwt() to anon,authenticated;create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth to anon,authenticated;grant execute on function auth.uid() to anon,authenticated;`,
 );
-await db.exec(
-  fs.readFileSync(
-    new URL('../supabase/migrations/202610090001_couple.sql', import.meta.url),
-    'utf8',
-  ),
-);
+const migrationRoot = new URL('../supabase/migrations/', import.meta.url);
+for (const file of fs.readdirSync(migrationRoot).filter((name) => name.endsWith('.sql')).sort()) {
+  await db.exec(fs.readFileSync(new URL(file, migrationRoot), 'utf8'));
+}
 const as = async (u) => {
   await db.exec(
     `reset role;select set_config('request.jwt.claim.sub','${u || ''}',false);select set_config('request.jwt.claims','${JSON.stringify(u ? { session_id: u, is_anonymous: false } : {})}',false);set role ${u ? 'authenticated' : 'anon'}`,

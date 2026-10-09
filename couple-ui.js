@@ -149,11 +149,12 @@
   }
   function join() {
     form(
-      `<h2>Aceptar invitación</h2>${field('token', 'Código privado de 64 caracteres')}${field('alias', 'Tu nombre visible')}<p>Al aceptar, compartirás únicamente los datos de Pareja con el otro miembro. La invitación caduca en 24 horas.</p>`,
+      `<h2>Aceptar invitación</h2>${field('token', 'Código privado de 64 caracteres', window.LedgerCoupleInvitation?.pending || '')}${field('alias', 'Tu nombre visible')}<p>Al aceptar, compartirás únicamente los datos de Pareja con el otro miembro. La invitación caduca en 24 horas.</p>`,
       'Aceptar explícitamente',
     );
     submit(async (v) => {
       await sync.rpc('join', { p_token: v.token.trim(), p_alias: v.alias });
+      window.LedgerCoupleInvitation?.clear();
       await sync.discover();
       render(tab);
     });
@@ -161,9 +162,19 @@
   async function invite() {
     try {
       const x = await sync.rpc('invite', { p_space: sync.space.id });
+      const link = window.LedgerCoupleInvitation.link(window.location.href, x.token);
       dialog(
-        `<h2>Invitación privada</h2><p>Comparte este código personalmente con tu pareja. Crear otra invitación revoca esta.</p><textarea readonly aria-label="Código de invitación">${esc(x.token)}</textarea><p>Caduca: ${esc(new Date(x.expires_at).toLocaleString())}</p><p>No aparece en una URL ni se envía a analítica.</p>`,
+        `<h2>Invitación privada</h2><p>Envía este enlace a tu pareja. Necesitará identificarse y aceptar; solo compartirá el espacio Pareja. Crear otra invitación revoca esta.</p><textarea readonly aria-label="Enlace de invitación">${esc(link)}</textarea><button id=ce-copy-invite class=primary-btn>Copiar enlace</button> <button id=ce-share-invite class=secondary-btn>Compartir</button><details><summary>Usar código manual</summary><textarea readonly aria-label="Código de invitación">${esc(x.token)}</textarea></details><p>Caduca: ${esc(new Date(x.expires_at).toLocaleString())}</p><p>Quien reciba el enlace puede aceptar: compártelo solo con tu pareja.</p>`,
       );
+      $('ce-copy-invite').onclick = async () => {
+        try { await navigator.clipboard.writeText(link); notify('Enlace copiado'); }
+        catch { notify('Selecciona y copia el enlace del recuadro'); }
+      };
+      $('ce-share-invite').hidden = !navigator.share;
+      $('ce-share-invite').onclick = async () => {
+        try { await navigator.share({ title: 'Ledger · Invitación Pareja', url: link }); }
+        catch (e) { if (e.name !== 'AbortError') notify('Puedes copiar el enlace'); }
+      };
     } catch (e) {
       notify(e.message);
     }
@@ -438,7 +449,7 @@
       root.innerHTML =
         head +
         card(
-          'Crear o unirse',
+          window.LedgerCoupleInvitation?.pending ? 'Has recibido una invitación privada' : 'Crear o unirse',
           '<button class="primary-btn" id="ce-create">Crear espacio</button> <button class="secondary-btn" id="ce-join">Aceptar invitación</button> <button class="secondary-btn" id="ce-logout">Cerrar sesión</button>',
         );
       $('ce-create').onclick = create;
@@ -774,6 +785,7 @@
       const config = localStorage.getItem(S.CONFIG_KEY);
       if (config) setupClient(JSON.parse(config));
     } catch {}
+    if (window.LedgerCoupleInvitation?.pending) switchSpace('couple');
     window.addEventListener('online', () => {
       if (active && sync?.space) sync.flush().catch((e) => notify(e.message));
     });

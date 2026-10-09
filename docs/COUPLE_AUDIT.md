@@ -43,14 +43,20 @@ Bloqueo concreto del conector: `get_cost` devuelve `MCP tool get_cost was not re
 
 ## Riesgos detectados y tratados
 
+Verificación final 09/10/2026 UTC: invitaciones por enlace privado incorporadas, sin unión automática ni envío a analíticas. Tras investigar las esperas se corrigió el uso de SQLSTATE `40001` en conflictos de negocio mediante una migración adicional con `PT409`: PostgREST podía reintentar indefinidamente una serialización ficticia. Las pruebas locales aplican ahora todas las migraciones ordenadas, no solo la inicial.
+
+La suite alojada completa pasó 12 comprobaciones con tres nuevas identidades ficticias: tercero/IDOR, campos privados, Realtime A→B, lecturas B y aislamiento C, escritura directa prohibida, idempotencia, conflicto real HTTP 409, invitación consumida, JWT revocado tras logout, revocación al abandonar, archivo cerrado de solo lectura y RPC sin sesión. Se ejecutó desde Edge Runtime para evitar el transporte WebSocket limitado del entorno local. La función temporal tenía JWT obligatorio, secreto aleatorio y límite de diez minutos; se sustituyó por HTTP 410 inmediatamente al terminar. Ninguna clave administrativa salió del runtime. Se conservaron archivos de auditoría ficticios; no se borraron datos reales. `npm test` pasó después de la corrección.
+
+Advisors finales: las cinco RPC SECURITY DEFINER autenticadas son intencionales y validan sesión viva/membresía; las tablas de invitaciones/operaciones sin políticas son privadas por defecto. Revisar [RPC privilegiadas](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable) y [tablas sin políticas](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy). La protección de contraseñas filtradas permanece deshabilitada en el proyecto Free; la interfaz pública utiliza OTP y las contraseñas solo se usaron en fixtures. No se afirma seguridad de un acceso público por contraseña. Véase [seguridad de contraseñas](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection).
+
 Separación explícita de módulos y almacenamiento; tokens de invitación de 256 bits, hash y caducidad; llamadas RPC con permisos mínimos; rechazo de campos privados; CAS para conflictos; sesión persistente solo por elección; caché por proyecto/usuario/espacio, borrada al cerrar sesión o revocar; bloqueo offline tras 15 minutos sin verificar permisos; exportación y restauración separadas.
 
 La seguridad local comparte la limitación del Ledger original: una persona con acceso al navegador/dispositivo o una vulnerabilidad XSS puede leer almacenamiento local. RLS protege el servidor, no cifra el dispositivo ni puede retirar archivos ya exportados. Se requiere dispositivo privado, HTTPS y validación de despliegue antes de habilitar datos reales.
 
 ## Pendientes explícitos
 
-1. Completar aceptación Auth/HTTP/Realtime del proyecto de pruebas y configurar correo autorizado para OTP público.
-2. Superar aceptación alojada y móvil antes de fusionar/publicar.
+1. Configurar correo autorizado para OTP público; las 12 comprobaciones alojadas Auth/HTTP/Realtime ya pasaron.
+2. Superar aceptación de correo y móvil antes de fusionar/publicar.
 3. Restauración entre espacios distintos, cambio de miembros y cambio de moneda base no permitidos en esta versión.
 4. Recurrentes se registran conscientemente; no se ejecutan solos en servidor.
 5. No se incorporan sincronización Personal, bancos, push ni adjuntos.

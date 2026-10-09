@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "test": "node scripts/audit.cjs && node scripts/multicurrency-audit.cjs && node scripts/sw-audit.cjs && npm run test:couple",
-    "test:couple": "node scripts/couple-assets.test.cjs && node --check couple-core.js && node --check couple-sync.js && node --check couple-ui.js && node scripts/couple-db.test.mjs && node scripts/couple-integration.test.mjs && node scripts/couple-ui.test.cjs",
+    "test:couple": "node scripts/couple-assets.test.cjs && node scripts/couple-invite.test.cjs && node --check couple-core.js && node --check couple-sync.js && node --check couple-ui.js && node scripts/couple-db.test.mjs && node scripts/couple-integration.test.mjs && node scripts/couple-ui.test.cjs",
     "test:couple:hosted": "node scripts/couple-hosted.test.mjs"
   },
   "devDependencies": {

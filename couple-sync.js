@@ -337,7 +337,7 @@
               await this.clear();
               throw e;
             }
-            const versionConflict = e.code === '40001' || /EDIT_CONFLICT/.test(e.message);
+            const versionConflict = e.code === 'PT409' || e.code === '40001' || /EDIT_CONFLICT/.test(e.message);
             const invalidProposal =
               (e.code === 'P0001' && !/RATE_LIMIT/.test(e.message)) || /^22/.test(e.code || '');
             if (versionConflict || invalidProposal) {

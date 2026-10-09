@@ -30,6 +30,13 @@ async function rpc(c, name, args) {
   }
   return data;
 }
+function denied(promise, code, message) {
+  return assert.rejects(promise, (error) => {
+    assert.equal(error.code, code, 'Expected server rejection, not a network failure');
+    if (message) assert.match(error.message, message);
+    return true;
+  });
+}
 try {
   for (const alias of ['A', 'B', 'C']) {
     const email = env['COUPLE_E2E_' + alias + '_EMAIL'],
@@ -82,15 +89,15 @@ try {
     p_operation: op,
   };
   await check('Supabase HTTP: outsider cannot mutate even with a known UUID', () =>
-    assert.rejects(rpc(c, 'apply', input)),
+    denied(rpc(c, 'apply', input), '42501'),
   );
   await check('Supabase HTTP: private fields rejected', () =>
-    assert.rejects(
+    denied(
       rpc(a, 'apply', {
         ...input,
         p_payload: { ...p, personal_account: 'FICTICIO' },
         p_operation: randomUUID(),
-      }),
+      }), 'P0001', /UNSHARED_FIELD/,
     ),
   );
   let received = false;
@@ -150,17 +157,17 @@ try {
     p_operation: randomUUID(),
   });
   await check('Supabase HTTP: stale edit rejected', () =>
-    assert.rejects(
+    denied(
       rpc(a, 'apply', {
         ...input,
         p_revision: 1,
         p_payload: { ...p, title: 'A stale FICTICIO' },
         p_operation: randomUUID(),
-      }),
+      }), 'PT409', /EDIT_CONFLICT/,
     ),
   );
   await check('Supabase HTTP: consumed invitation rejects outsider', () =>
-    assert.rejects(rpc(c, 'join', { p_token: invite.token, p_alias: 'C FICTICIO' })),
+    denied(rpc(c, 'join', { p_token: invite.token, p_alias: 'C FICTICIO' }), 'P0001', /INVALID_INVITE/),
   );
   const beforeLogout = await b.auth.getSession();
   const revokedToken = beforeLogout.data.session.access_token;
@@ -192,19 +199,19 @@ try {
     async () => {
       const r = await a.from('ledger_couple_entities').select('*').eq('space_id', space);
       assert.equal(r.data.length, 0);
-      await assert.rejects(rpc(a, 'apply', input));
+      await denied(rpc(a, 'apply', input), '42501');
     },
   );
   await check('Supabase HTTP: remaining member can read closed space but not write', async () => {
     const r = await b.from('ledger_couple_spaces').select('status').eq('id', space);
     assert.equal(r.data[0].status, 'closed');
-    await assert.rejects(rpc(b, 'apply', { ...input, p_revision: 2, p_operation: randomUUID() }));
+    await denied(rpc(b, 'apply', { ...input, p_revision: 2, p_operation: randomUUID() }), '42501');
   });
   await rpc(b, 'leave', { p_space: space });
   await a.auth.signOut();
   await check('Supabase HTTP: signed-out client cannot call shared RPC', () =>
-    assert.rejects(
-      rpc(a, 'create', { p_name: 'FICTICIO', p_alias: 'FICTICIO', p_currency: 'EUR' }),
+    denied(
+      rpc(a, 'create', { p_name: 'FICTICIO', p_alias: 'FICTICIO', p_currency: 'EUR' }), '42501',
     ),
   );
   console.log(

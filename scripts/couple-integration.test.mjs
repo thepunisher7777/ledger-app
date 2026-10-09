@@ -20,12 +20,10 @@ await db.exec(`create schema auth; create schema extensions; create role anon; c
  create function auth.jwt() returns jsonb language sql stable as $$select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb$$;grant execute on function auth.jwt() to anon,authenticated;
  create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
  grant usage on schema auth to anon,authenticated; grant execute on function auth.uid() to anon,authenticated;`);
-await db.exec(
-  fs.readFileSync(
-    new URL('../supabase/migrations/202610090001_couple.sql', import.meta.url),
-    'utf8',
-  ),
-);
+const migrationRoot = new URL('../supabase/migrations/', import.meta.url);
+for (const file of fs.readdirSync(migrationRoot).filter((name) => name.endsWith('.sql')).sort()) {
+  await db.exec(fs.readFileSync(new URL(file, migrationRoot), 'utf8'));
+}
 const tokens = new Map([
   ['fixture-A', A],
   ['fixture-B', B],

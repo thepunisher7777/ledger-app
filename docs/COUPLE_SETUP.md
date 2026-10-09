@@ -22,7 +22,7 @@ Abrir http://127.0.0.1:8080. En Personal comprobar datos ficticios, exportar y r
 5. Activar Email Auth con verificación. En plantillas Magic Link y Confirm Signup, incluir `{{ .Token }}` para código OTP; Ledger no procesa magic links en URL. Mantener expiración/rate limits de Auth conservadores.
 6. Para correo general configurar SMTP autorizado o un proveedor ya disponible; no contratarlo desde esta rama. El servicio de correo integrado de Supabase solo envía a direcciones preautorizadas del equipo y tiene límites reducidos: no basta para una pareja externa en producción.
 7. Copiar solo URL HTTPS del proyecto y clave pública publishable/anon. En Ledger: PAREJA → Configurar conexión. Nunca service-role ni contraseña de base de datos. La configuración queda local en cada dispositivo; repetir en el segundo. Mantener sesión es opcional y solo para dispositivos privados.
-8. A entra por correo, crea espacio, elige alias y EUR/USD. Genera código privado que caduca en 24 h. B entra con otra identidad y acepta explícitamente. No se envía la invitación automáticamente.
+8. A entra por correo, crea espacio, elige alias y EUR/USD. Genera un enlace privado que caduca en 24 h y pulsa Copiar enlace o Compartir. B abre el enlace en Ledger, entra con otra identidad y pulsa Aceptar invitación; el código se rellena sin realizar una vinculación automática. El código manual sigue disponible. Generar otra invitación revoca la anterior. El enlace por sí solo no sustituye la identificación segura.
 9. Registrar datos exclusivamente ficticios. No importar backups reales para las pruebas.
 
 ## Aceptación alojada antes de publicar
@@ -40,7 +40,7 @@ Abrir http://127.0.0.1:8080. En Personal comprobar datos ficticios, exportar y r
 
 Guardar la evidencia en un informe de pruebas, sin tokens, emails reales, contraseñas ni balances reales en GitHub. Fusionar/publicar únicamente tras superar esa puerta. El CI no publica la app ni aplica SQL.
 
-Hay un runner adicional `npm run test:couple:hosted` para un proyecto aislado y tres identidades ficticias precreadas. Requiere variables locales `COUPLE_E2E_URL`, `COUPLE_E2E_PUBLIC_KEY`, `COUPLE_E2E_A_EMAIL`, `COUPLE_E2E_A_PASSWORD` (también B/C) y `COUPLE_E2E_ALLOW_MUTATIONS=fictional-only`. No guardar sus valores en GitHub. El runner usa Auth/HTTP/Realtime reales, crea y cierra un espacio ficticio y conserva su auditoría; no hace borrado permanente. Si una identidad ya tiene un espacio accesible, aborta. No se ejecutó en esta sesión por falta de proyecto/credenciales, ni se ejecuta automáticamente en CI. Prueba OTP por separado en los dispositivos: el runner inicia sesión con contraseñas de pruebas.
+Hay un runner adicional `npm run test:couple:hosted` para un proyecto aislado y tres identidades ficticias precreadas. Requiere variables locales `COUPLE_E2E_URL`, `COUPLE_E2E_PUBLIC_KEY`, `COUPLE_E2E_A_EMAIL`, `COUPLE_E2E_A_PASSWORD` (también B/C) y `COUPLE_E2E_ALLOW_MUTATIONS=fictional-only`. No guardar sus valores en GitHub. El runner usa Auth/HTTP/Realtime reales, crea y cierra un espacio ficticio y conserva su auditoría; no hace borrado permanente. Si una identidad ya tiene un espacio accesible, aborta. Las 12 comprobaciones pasaron desde una función temporal protegida, ahora deshabilitada, en el proyecto de pruebas autorizado. No se ejecuta automáticamente en CI. Prueba OTP por separado en los dispositivos: el runner inicia sesión con contraseñas de pruebas.
 
 ## Costes consultados el 2026-10-09
 
