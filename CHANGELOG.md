@@ -1,3 +1,10 @@
+## Beta 1.6.0 — 2026-10-10
+
+- Modo Pareja nativo disponible con conexión pública preparada, sin configuración técnica manual.
+- Usuario/contraseña, recuperación sin correo e invitación privada con caducidad.
+- Personal conserva almacenamiento, funcionalidades y backups; no se sincroniza automáticamente.
+- Publicación autorizada por el usuario tras probar la vista previa. Regresiones y permisos validados con datos ficticios.
+
 ## Beta 1.6.0 Couple Preview 2 — 2026-10-10
 
 - Identidad Pareja con usuario/contraseña y recuperación mediante secreto de 256 bits, sin SMTP ni Brevo.

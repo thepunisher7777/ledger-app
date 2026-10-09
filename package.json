@@ -12,5 +12,5 @@
     "@supabase/supabase-js": "2.117.3",
     "jsdom": "30.1.2"
   },
-  "version": "1.6.0-couple.2"
+  "version": "1.6.0"
 }

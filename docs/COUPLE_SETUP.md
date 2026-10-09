@@ -1,6 +1,6 @@
 # Configuración y validación de Pareja
 
-Esta rama es una vista previa. Personal funciona sin backend/login. **No está desplegada sobre la publicación actual.**
+Beta 1.6.0: publicación solicitada por el usuario tras probar la vista previa. Personal funciona sin backend/login. La conexión pública de Pareja está preparada; los pasos de infraestructura son para operadores o instalaciones propias.
 
 ## Desarrollo local
 
@@ -15,7 +15,7 @@ Abrir http://127.0.0.1:8080. En Personal comprobar datos ficticios, exportar y r
 
 ## Backend autorizado
 
-1. Conectar la integración Supabase o proporcionar acceso administrativo a un **proyecto de pruebas autorizado**. No hay proyecto, claves ni credenciales preconfigurados. No crear un plan de pago.
+1. Conectar la integración Supabase o proporcionar acceso administrativo a un **proyecto de pruebas autorizado**. La publicación incluye solo la URL y clave pública del proyecto autorizado; nunca credenciales administrativas. No crear un plan de pago.
 2. Crear/usar proyecto Free, preferentemente región UE. Verificar que esté vacío o que esta migración no colisione con tablas existentes. Revisar la migración, no ejecutar sobre una base ajena sin autorización.
 3. Aplicar `supabase/migrations/202610090001_couple.sql` desde el SQL Editor o pipeline autorizado. La migración es transaccional, inicial y de una sola aplicación. No borra tablas previas ni contiene finanzas personales.
 4. Mantener Data API únicamente sobre los esquemas previstos; `ledger_private` NO debe exponerse. Comprobar grants/RLS y que `supabase_realtime` publique spaces/members/entities. La migración añade esas tablas si la publicación existe; no reemplaza otras publicaciones.
@@ -69,3 +69,7 @@ La publicación original sigue en main. La rama puede descartarse sin tocar `flo
 PAREJA → Entrar / crear cuenta → Recuperar acceso. Introducir usuario, código anterior y nueva contraseña. Guardar ANTES el nuevo código mostrado. La recuperación consume y rota el código anterior, revoca todas las sesiones y conserva el mismo usuario y pertenencia al espacio. Si se pierde la respuesta o falla el cambio de contraseña después de rotar el código, repetir con el nuevo código que ya se guardó. Sin contraseña ni código no existe recuperación por correo ni un atajo para que la pareja tome la identidad.
 
 El servicio limita altas/recuperaciones a 20 por IP/hora, 8 por usuario/hora y 100 globales/hora. Auth mantiene sus propios límites de login. Estos límites protegen el proyecto Free pero pueden limitar registros legítimos; antes de un lanzamiento amplio añadir CAPTCHA y revisar capacidad. No hay scheduler ni tareas periódicas; los contadores caducados se limpian al recibir peticiones. La protección de contraseñas filtradas de Supabase no está habilitada en este plan; el mínimo es 12 caracteres, se recomienda un gestor y contraseña única.
+
+## Publicación 2026-10-10
+
+El usuario confirmó que la vista previa funcionaba y autorizó integrarla en el Ledger habitual. La aplicación utiliza la conexión pública autorizada por defecto, sin copiar estados personales. Una configuración local explícita prevalece sobre la conexión predeterminada. La sesión por defecto no persiste tras cerrar la aplicación; puede optarse por recordarla en un dispositivo privado. No se afirma una prueba independiente en iPhone físico: la evidencia del usuario y las pruebas automatizadas se distinguen.

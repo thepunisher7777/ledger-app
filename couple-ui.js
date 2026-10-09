@@ -777,6 +777,7 @@
     try {
       const config = localStorage.getItem(S.CONFIG_KEY);
       if (config) setupClient(JSON.parse(config));
+      else if (window.LedgerCoupleDefaultConfig) setupClient(window.LedgerCoupleDefaultConfig);
     } catch {}
     if (window.LedgerCoupleInvitation?.pending) switchSpace('couple');
     window.addEventListener('online', () => {

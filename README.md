@@ -1,4 +1,4 @@
-# LEDGER by ARX · Beta 1.6.0 Couple Preview 2
+# LEDGER by ARX · Beta 1.6.0
 
 Vista previa en `feature/couple-mode`; la app publicada permanece en Beta 1.5.0. Personal conserva datos y backups sin login. El nuevo selector Pareja requiere un backend Supabase autorizado para compartir datos reales: no hay conexión configurada ni datos simulados en la aplicación.
 
@@ -38,4 +38,6 @@ Sin login obligatorio. La sincronización futura será opcional.
 
 ### Acceso Pareja sin correo
 
-Preview 2 permite crear una identidad con usuario y contraseña, guardar un código secreto de recuperación y compartir una invitación por enlace/código. No necesita Brevo ni SMTP. El acceso y la recuperación ya se han probado contra Supabase real con identidades ficticias. Personal no requiere registro ni se sincroniza. La rama de vista previa aún debe validarse visualmente en Safari/iPhone antes de sustituir producción. Véase [configuración](docs/COUPLE_SETUP.md).
+Preview 2 permite crear una identidad con usuario y contraseña, guardar un código secreto de recuperación y compartir una invitación por enlace/código. No necesita Brevo ni SMTP. El acceso y la recuperación ya se han probado contra Supabase real con identidades ficticias. Personal no requiere registro ni se sincroniza. El usuario probó la vista previa y autorizó integrarla en la publicación habitual el 2026-10-10. Véase [configuración](docs/COUPLE_SETUP.md).
+
+En la publicación habitual la conexión pública de Pareja está preparada; no hace falta introducir claves. Cada persona crea su propia identidad. Mantener sesión es opcional mediante la configuración de conexión y solo para dispositivos privados.
