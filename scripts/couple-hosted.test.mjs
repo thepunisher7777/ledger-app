@@ -38,6 +38,10 @@ try {
       throw Error('Three pre-created fictional test identities are required');
     const client = createClient(config.url, config.key, {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+      global: {
+        fetch: (url, init = {}) =>
+          fetch(url, { ...init, signal: init.signal || AbortSignal.timeout(30000) }),
+      },
     });
     const { data, error } = await client.auth.signInWithPassword({ email, password });
     if (error) throw Error('Unable to authenticate fictional test identity ' + alias);
@@ -165,11 +169,13 @@ try {
     const headers = { apikey: config.key, Authorization: 'Bearer ' + revokedToken };
     const read = await fetch(config.url + '/rest/v1/ledger_couple_entities?space_id=eq.' + space, {
       headers,
+      signal: AbortSignal.timeout(30000),
     });
     if (read.ok) assert.deepEqual(await read.json(), []);
     else assert.ok([401, 403].includes(read.status));
     const write = await fetch(config.url + '/rest/v1/rpc/ledger_couple_apply', {
       method: 'POST',
+      signal: AbortSignal.timeout(30000),
       headers: { ...headers, 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...input, p_revision: 2, p_operation: randomUUID() }),
     });

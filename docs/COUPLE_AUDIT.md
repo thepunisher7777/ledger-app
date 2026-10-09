@@ -33,7 +33,11 @@ La suite de autorización ejecuta **la migración real en PostgreSQL PGlite**, c
 
 Queda pendiente validar Auth/OTP, PostgREST y Realtime en un proyecto Supabase autorizado y dos dispositivos reales. No se pudo instalar Chromium/WebKit en este entorno: la descarga devolvió archivos incompletos. Por tanto no se declara validación visual en Safari ni en un iPhone físico. La PWA, formularios adaptativos y rutas se prueban estructuralmente, pero la aceptación móvil es un bloqueo de publicación.
 
-Actualización de acceso: Supabase conectado y consultado mediante su integración oficial. La organización ARX está en plan Free y no tiene proyectos. Se debe confirmar la creación de un proyecto de pruebas antes de aplicar SQL. Revisados changelog y documentación actual: la autorización incorpora comprobación de sesión Auth viva para bloquear repetición de JWT tras logout, además de membresía y RLS. No se ha creado aún infraestructura.
+Actualización 10/10/2026: creado y verificado `ledger-couple-test` en ARX Free, Frankfurt (`tsmdkrllkafmlqcwzsii`), sin pagos. Migración inicial aplicada. Las seis tablas tienen RLS; clientes anónimos no pueden leer entidades ni ejecutar RPC de creación y los autenticados no pueden escribir directamente en tablas. Publicación Realtime limitada a espacios, miembros y entidades compartidas. Se revocó acceso cliente al helper `rls_auto_enable` instalado por Supabase; la segunda migración registra este endurecimiento.
+
+Tres identidades ficticias fueron creadas mediante Auth Admin en una función temporal protegida por JWT y un secreto aleatorio con caducidad de diez minutos. La función fue sustituida inmediatamente por una respuesta 410 sin operaciones. Ninguna clave administrativa fue copiada al cliente o al repositorio. La primera ejecución no recibió el evento Realtime esperado; la segunda sí lo recibió y superó ocho comprobaciones alojadas: tercero, campos privados, Realtime, lectura por B/aislamiento de C, escritura directa, idempotencia, conflicto de revisión e invitación consumida. Se verificó después mediante HTTP real que un JWT firmado anterior al logout no permite lectura ni RPC. La ejecución completa se interrumpió tras respuestas muy lentas; el runner incorpora ahora límites de 30 segundos por petición. No se declara aún aceptación completa y reproducible de la suite alojada.
+
+El panel Auth muestra que las plantillas por defecto están en uso y exige SMTP propio para editarlas. El acceso público por código OTP requiere configurar un proveedor de correo y sus plantillas; no se habilita un registro sin verificación ni se contrata un servicio de pago. Sigue pendiente prueba en Safari/iPhone físico y publicación de la rama.
 
 Bloqueo concreto del conector: `get_cost` devuelve `MCP tool get_cost was not returned by tools/list`. No se puede obtener la confirmación de coste que exige `create_project`; no se inventa un identificador de confirmación ni se crea infraestructura ignorando ese requisito. Alternativa: creación de proyecto Free desde el panel de Supabase, con organización y región confirmadas, y después aplicar/verificar la migración mediante el conector. Nueva ejecución local completa: 39 pruebas SQL de autorización, 20 de dominio/sincronización/HTTP, 10 DOM y regresiones originales aprobadas.
 
@@ -45,7 +49,7 @@ La seguridad local comparte la limitación del Ledger original: una persona con 
 
 ## Pendientes explícitos
 
-1. Conectar proyecto Supabase de pruebas, migración, Auth y correo autorizado; sin credenciales actualmente disponibles.
+1. Completar aceptación Auth/HTTP/Realtime del proyecto de pruebas y configurar correo autorizado para OTP público.
 2. Superar aceptación alojada y móvil antes de fusionar/publicar.
 3. Restauración entre espacios distintos, cambio de miembros y cambio de moneda base no permitidos en esta versión.
 4. Recurrentes se registran conscientemente; no se ejecutan solos en servidor.
