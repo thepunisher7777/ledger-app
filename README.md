@@ -1,4 +1,14 @@
-# LEDGER by ARX · Beta 1.5.0 — International hotfix
+# LEDGER by ARX · Beta 1.6.0 Couple Preview 1
+
+Vista previa en `feature/couple-mode`; la app publicada permanece en Beta 1.5.0. Personal conserva datos y backups sin login. El nuevo selector Pareja requiere un backend Supabase autorizado para compartir datos reales: no hay conexión configurada ni datos simulados en la aplicación.
+
+Implementados módulos nativos, invitaciones seguras, RLS/RPC, gastos y repartos, fondos/aportaciones, compensaciones, presupuestos/objetivos, estadísticas, reglas recurrentes manuales, cola offline con conflictos, exportación/restauración separada y desvinculación.
+
+- [Auditoría y estado real](docs/COUPLE_AUDIT.md)
+- [Seguridad, RLS y conflictos](docs/COUPLE_SECURITY.md)
+- [Configuración, aceptación y costes](docs/COUPLE_SETUP.md)
+
+Ejecutar `npm ci --ignore-scripts`, `python scripts/smoke_check.py` y `npm test`. No fusionar/desplegar hasta validar también Supabase alojado y Safari/PWA en iPhone.
 
 PWA local-first de finanzas personales.
 

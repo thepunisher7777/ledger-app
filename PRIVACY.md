@@ -1,6 +1,6 @@
 # Privacidad de LEDGER by ARX
 
-Ledger es una PWA local-first. Los movimientos, importes, cuentas, saldos, presupuestos, objetivos, notas y deudas se guardan localmente en el dispositivo salvo que el usuario exporte una copia manualmente.
+Ledger es una PWA local-first. En Personal, los movimientos, importes, cuentas, saldos, presupuestos, objetivos, notas y deudas se guardan localmente en el dispositivo salvo que el usuario exporte una copia manualmente.
 
 ## Analítica opcional
 
@@ -34,4 +34,13 @@ La preferencia de idioma se guarda localmente en `ledger.ui.language.v1`. Cambia
 
 Las cuentas EUR/USD, sus importes y el último tipo guardado permanecen en el estado local. La actualización automática consulta exclusivamente `EUR/USD` al proveedor BCE de Frankfurter (`https://api.frankfurter.dev/v2/providers/ecb/rate/EUR/USD`), sin credenciales, sin referencia de la página y sin enviar importes, nombres de cuenta, movimientos ni archivos. El proveedor recibe la conexión de red. Puede desactivarse desde Ajustes y sustituirse por un cambio manual. Sin conexión se conserva el último tipo válido y se muestra su fecha.
 
-Portfolio Performance XML se analiza en el dispositivo como vista previa. No se sube a ningún servidor ni reemplaza los datos. No se añade login; cualquier sincronización futura deberá ser opcional y mantener el modo local.
+Portfolio Performance XML se analiza en el dispositivo como vista previa. No se sube a ningún servidor ni reemplaza los datos. Personal no exige login. Pareja es una sincronización opcional separada del modo local.
+# Modo Pareja — vista previa opcional
+
+Personal conserva su almacenamiento y backups existentes sin login ni subida automática. Pareja requiere identidad propia y un proyecto Supabase configurado conscientemente. Solo se envían entidades creadas expresamente en ese espacio o una copia personal revisada y confirmada. No se envían automáticamente notas, cuentas, IBAN ni identificadores de movimientos personales.
+
+Pareja almacena en servidor datos compartidos, UUID de miembros y autor/editor, alias e historial. Supabase Auth trata el correo para verificar identidad, pero la API de Ledger compartida no devuelve emails ni finanzas personales. Exportación/restauración usan un formato Pareja separado. No se añaden datos financieros a la analítica existente.
+
+Configuración pública: `ledger.couple.config.v1`; caché y cola por proyecto/usuario/espacio `ledger.couple.cache.v1:*`; puntero de caché `ledger.couple.last.v1:*`. Comprobantes locales para evitar copiar dos veces: `ledger.couple.copy-receipts.v1`, sin subir identificadores originales. Sesión en memoria salvo elección de mantenerla, que almacena tokens Auth en `ledger.couple.auth.v1:<proyecto>`. Caché bloqueada después de 15 minutos sin verificar; logout o revocación detectada elimina esa caché. Archivos ya exportados no pueden revocarse a distancia.
+
+Abandonar cierra escrituras y revoca al saliente; el restante conserva lectura/exportación del archivo compartido. No se transfieren ni borran datos personales. Historial cerrado permanece hasta un procedimiento autorizado de eliminación conjunta, sin purga automática. [Políticas completas](docs/COUPLE_SECURITY.md).

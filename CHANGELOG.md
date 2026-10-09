@@ -1,5 +1,15 @@
 # Changelog
 
+## Beta 1.6.0 Couple Preview 1 — 2026-10-09 (no publicada)
+
+- Selector Personal/Pareja integrado en la app original. Personal, `flowfi.public.v27`, importaciones, backups y multidivisa permanecen independientes, sin login obligatorio.
+- Migración PostgreSQL con RLS, RPC autorizadas, dos miembros, invitaciones privadas de 256 bits/24 horas y auditoría con autor/editor servidor.
+- Movimientos, repartos exactos, fondos, aportaciones, compensaciones sin doble gasto, presupuestos, objetivos, estadísticas y registro consciente de reglas recurrentes.
+- Cola local por proyecto/usuario/espacio, UUID/idempotencia, CAS y propuestas de conflicto separadas; caché offline hasta 15 minutos desde verificar acceso, sesión persistente opt-in.
+- Copia personal saneada con revisión/confirmación. Exportación y restauración Pareja del mismo espacio con revisión, deduplicación y control de versiones; cierre/revocación sin tocar datos personales.
+- CI amplía regresiones con autorización PostgreSQL, dos clientes/HTTP local, contabilidad, offline, conflictos y DOM. SDK Supabase oficial fijado y servido localmente.
+- Pendiente proyecto Supabase autorizado, correo OTP y aceptación alojada/móvil. No despliegue de producción, automatizaciones Work ni servicios de pago.
+
 ## Beta 1.5.0 — Multidivisa (2026-10-05)
 
 - Cuentas EUR/USD con saldos, movimientos, conciliación y movimientos fijos en su divisa original.

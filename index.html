@@ -133,6 +133,7 @@ button{cursor:pointer}
 .feedback-textarea{width:100%;min-height:150px;resize:vertical;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:12px;padding:12px 13px;outline:none;font:inherit;line-height:1.45}.feedback-meta{font-size:10px;color:var(--muted);line-height:1.45;margin:8px 0 12px}.beta-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border:1px solid rgba(91,183,255,.22);border-radius:9px;background:rgba(91,183,255,.07);color:#9dd4ff;font-size:10px;font-weight:850;letter-spacing:.06em}.safety-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.safety-row button{flex:1;min-width:130px}.pwa-state{font-size:10px;font-weight:850;color:#9dd4ff}.settings-copy .privacy-note{color:#7f9ab5;font-size:9px;margin-top:3px}
 
 </style>
+  <link rel="stylesheet" href="couple.css">
   <title>Ledger</title>
 </head>
 <body>
@@ -153,6 +154,7 @@ button{cursor:pointer}
       </div>
     </header>
 
+    <div class="space-switch" aria-label="Espacio financiero"><button type="button" data-ledger-space="personal" class="active" aria-pressed="true">PERSONAL</button><button type="button" data-ledger-space="couple" aria-pressed="false">PAREJA</button></div>
     <main id="main" class="main"></main>
 
     <button id="fab" class="fab" aria-label="Añadir movimiento">+</button>
@@ -359,6 +361,7 @@ button{cursor:pointer}
     </form>
   </dialog>
 
+  <dialog id="couple-dialog" aria-label="Operación del espacio Pareja"><button type="button" id="couple-close" class="icon-btn" aria-label="Cerrar">✕</button><div id="couple-body"></div></dialog>
   <div id="toast" class="toast" role="status"></div>
   <script src="posthog-stub.js"></script>
 <script src="posthog-bridge.js"></script>
@@ -366,12 +369,16 @@ button{cursor:pointer}
 <script src="i18n.js"></script>
 <script src="money.js"></script>
 <script src="portfolio-import.js"></script>
+<script src="vendor/supabase.js"></script>
+<script src="couple-core.js"></script>
+<script src="couple-sync.js"></script>
+<script src="couple-ui.js"></script>
 <script>
 (() => {
   'use strict';
 
   const VERSION = 2;
-  const APP_VERSION = 'Beta 1.5.0';
+  const APP_VERSION = 'Beta 1.6.0 Couple Preview 1';
   const STORAGE_KEY = 'flowfi.public.v27';
   const SAFETY_BACKUP_KEY = STORAGE_KEY + '.safety';
   const CORRUPT_BACKUP_KEY = STORAGE_KEY + '.corrupt';
@@ -871,6 +878,7 @@ button{cursor:pointer}
   }
 
   function render(){
+    if(window.LedgerCouple?.isActive()){window.LedgerCouple.render(route);return;}
     const cycleName=capitalize(monthFmt.format(selectedMonth));
     el('month-label').textContent = selectedPeriod==='year'?String(selectedMonth.getFullYear()):selectedPeriod==='week'?'Semana':selectedPeriod==='day'?'Hoy':selectedPeriod==='all'?'Todo':cycleName;
     if(el('month-menu-wrap')?.classList.contains('open')) renderMonthDropdown();
@@ -1292,6 +1300,7 @@ button{cursor:pointer}
     el('transaction-title').textContent=editingTxId?'Editar movimiento':(transfer?'Transferir entre cuentas':expense?'Añadir gasto':'Añadir ingreso');
   }
   function openTransaction(forcedType=null,editId=null){
+    if(window.LedgerCouple?.isActive()){window.LedgerCouple.open();return;}
     transactionCommitLock=false;if(el('save-transaction'))el('save-transaction').disabled=false;
     editingTxId=editId; const existing=editId?state.transactions.find(t=>t.id===editId):null; txType=existing?.type||forcedType||'expense';selectedCategory=existing?.category||(txType==='income'?'Salario':'Comida');
     const linkedPreset=!existing&&txType==='expense'&&pendingLiabilityLinkId?getLiability(pendingLiabilityLinkId):null;
@@ -1592,6 +1601,30 @@ button{cursor:pointer}
   window.addEventListener('unhandledrejection',()=>analyticsEmit('ledger-error','promise'));
   if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>analyticsEmit('ledger-error','service-worker'));
   ['tx-account','tx-from-account','tx-to-account'].forEach(id=>el(id).addEventListener('change',()=>updateTransactionCurrency(true)));el('tx-amount').addEventListener('input',()=>updateTransactionCurrency(true));
+  window.LedgerCouple?.configure({renderPersonal:()=>setRoute(route)});
+  const copyButton=document.createElement('button');
+  copyButton.id='copy-to-couple';copyButton.type='button';copyButton.className='secondary-btn';
+  copyButton.textContent='Crear copia en Pareja (revisar campos)';
+  el('transaction-dialog').append(copyButton);
+  copyButton.addEventListener('click',()=>{
+    try{
+      const t=state.transactions.find(x=>x.id===editingTxId);
+      if(!t)return toast('Guarda primero el movimiento Personal');
+      if(t.splits?.length||t.liabilityId)return toast('Crea el gasto compartido manualmente para revisar su reparto');
+      const draft=window.LedgerCoupleCore.personalDraft({type:t.type,amount:t.amount,date:t.date,currency:txCurrency(t),category:t.category});
+      // The original ID stays ONLY in this local receipt, never in a shared payload.
+      const receiptKey='ledger.couple.copy-receipts.v1';
+      const receipts=Object.assign(Object.create(null),JSON.parse(localStorage.getItem(receiptKey)||'{}'));
+      const copies=()=>Array.isArray(receipts[t.id])?receipts[t.id]:[];
+      draft.alreadyShared=(space,user,ids)=>copies().some(r=>r.space===space&&r.user===user&&ids.includes(r.entity));
+      draft.onQueued=receipt=>{
+        receipts[t.id]=[...copies(),receipt];
+        try{localStorage.setItem(receiptKey,JSON.stringify(receipts));}
+        catch{toast('Copia en cola. No se pudo guardar el comprobante local: evita volver a copiarla');}
+      };
+      window.LedgerCouple.offerCopy(draft);
+    }catch(e){toast(e.message);}
+  });
   render();refreshExchangeRates();analyticsMaybeAsk();maybeStartFlowFiMigration();if(bootRecoveryNotice)setTimeout(()=>toast(bootRecoveryNotice),500);
 })();
 
