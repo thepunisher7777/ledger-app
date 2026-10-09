@@ -33,6 +33,10 @@ La suite de autorización ejecuta **la migración real en PostgreSQL PGlite**, c
 
 Queda pendiente validar Auth/OTP, PostgREST y Realtime en un proyecto Supabase autorizado y dos dispositivos reales. No se pudo instalar Chromium/WebKit en este entorno: la descarga devolvió archivos incompletos. Por tanto no se declara validación visual en Safari ni en un iPhone físico. La PWA, formularios adaptativos y rutas se prueban estructuralmente, pero la aceptación móvil es un bloqueo de publicación.
 
+Actualización de acceso: Supabase conectado y consultado mediante su integración oficial. La organización ARX está en plan Free y no tiene proyectos. Se debe confirmar la creación de un proyecto de pruebas antes de aplicar SQL. Revisados changelog y documentación actual: la autorización incorpora comprobación de sesión Auth viva para bloquear repetición de JWT tras logout, además de membresía y RLS. No se ha creado aún infraestructura.
+
+Bloqueo concreto del conector: `get_cost` devuelve `MCP tool get_cost was not returned by tools/list`. No se puede obtener la confirmación de coste que exige `create_project`; no se inventa un identificador de confirmación ni se crea infraestructura ignorando ese requisito. Alternativa: creación de proyecto Free desde el panel de Supabase, con organización y región confirmadas, y después aplicar/verificar la migración mediante el conector. Nueva ejecución local completa: 39 pruebas SQL de autorización, 20 de dominio/sincronización/HTTP, 10 DOM y regresiones originales aprobadas.
+
 ## Riesgos detectados y tratados
 
 Separación explícita de módulos y almacenamiento; tokens de invitación de 256 bits, hash y caducidad; llamadas RPC con permisos mínimos; rechazo de campos privados; CAS para conflictos; sesión persistente solo por elección; caché por proyecto/usuario/espacio, borrada al cerrar sesión o revocar; bloqueo offline tras 15 minutos sin verificar permisos; exportación y restauración separadas.

@@ -23,6 +23,8 @@ La invitación usa 32 bytes criptográficos aleatorios; solo se persiste SHA-256
 
 Solo los miembros actuales pueden autorizar operaciones. Cambiar un UUID en HTTP no cambia esa autorización. `created_by`/`updated_by` son establecidos por el servidor; el cliente no puede falsificarlos. Importe, cambio, fecha, reparto y referencias a fondos se validan también en SQL. Se rechazan claves fuera de la lista compartida, nulos, sumas inválidas, usuarios ajenos y referencias a cuentas externas.
 
+Cada autorización comprueba además `session_id` del JWT contra `auth.sessions`, ligado a su `user_id`, con `not_after` válido y sin identidad anónima. Si Auth elimina la sesión al cerrar sesión, repetir el JWT firmado antiguo no recupera lecturas ni RPC aunque todavía no haya expirado. El helper es privado, sin acceso cliente a tablas Auth; no se consulta `user_metadata` para permisos. La tabla privada de operaciones también activa RLS como defensa adicional.
+
 ## Conflictos e idempotencia
 
 Cada registro tiene UUID y versión entera. La RPC aplica exclusivamente la versión esperada, bajo bloqueo transaccional; una versión obsoleta devuelve `40001`. La propuesta se guarda separada del dato del servidor, no se reintenta con una nueva versión automáticamente. La interfaz permite descartarla y volver a editar el dato actual. No hay botón de sobrescritura forzada.

@@ -158,6 +158,28 @@ try {
   await check('Supabase HTTP: consumed invitation rejects outsider', () =>
     assert.rejects(rpc(c, 'join', { p_token: invite.token, p_alias: 'C FICTICIO' })),
   );
+  const beforeLogout = await b.auth.getSession();
+  const revokedToken = beforeLogout.data.session.access_token;
+  await b.auth.signOut({ scope: 'local' });
+  await check('Supabase HTTP: replay of signed JWT after logout cannot read or write', async () => {
+    const headers = { apikey: config.key, Authorization: 'Bearer ' + revokedToken };
+    const read = await fetch(config.url + '/rest/v1/ledger_couple_entities?space_id=eq.' + space, {
+      headers,
+    });
+    if (read.ok) assert.deepEqual(await read.json(), []);
+    else assert.ok([401, 403].includes(read.status));
+    const write = await fetch(config.url + '/rest/v1/rpc/ledger_couple_apply', {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...input, p_revision: 2, p_operation: randomUUID() }),
+    });
+    assert.ok([401, 403].includes(write.status));
+  });
+  const relogin = await b.auth.signInWithPassword({
+    email: env.COUPLE_E2E_B_EMAIL,
+    password: env.COUPLE_E2E_B_PASSWORD,
+  });
+  if (relogin.error) throw Error('Unable to reauthenticate fictional identity B');
   await rpc(a, 'leave', { p_space: space });
   await check(
     'Supabase HTTP: leaving revokes reads and even old idempotent operations',

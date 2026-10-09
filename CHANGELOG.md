@@ -4,6 +4,7 @@
 
 - Selector Personal/Pareja integrado en la app original. Personal, `flowfi.public.v27`, importaciones, backups y multidivisa permanecen independientes, sin login obligatorio.
 - Migración PostgreSQL con RLS, RPC autorizadas, dos miembros, invitaciones privadas de 256 bits/24 horas y auditoría con autor/editor servidor.
+- Autorización verifica sesión Auth viva y su propietario, además de membresía: un JWT anterior no conserva acceso después de logout. Rechaza sesiones expiradas y anónimas.
 - Movimientos, repartos exactos, fondos, aportaciones, compensaciones sin doble gasto, presupuestos, objetivos, estadísticas y registro consciente de reglas recurrentes.
 - Cola local por proyecto/usuario/espacio, UUID/idempotencia, CAS y propuestas de conflicto separadas; caché offline hasta 15 minutos desde verificar acceso, sesión persistente opt-in.
 - Copia personal saneada con revisión/confirmación. Exportación y restauración Pareja del mismo espacio con revisión, deduplicación y control de versiones; cierre/revocación sin tocar datos personales.

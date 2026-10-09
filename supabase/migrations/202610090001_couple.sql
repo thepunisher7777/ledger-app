@@ -41,8 +41,20 @@ create table ledger_private.operations (
 );
 create index couple_operation_rate on ledger_private.operations(actor,created_at);
 revoke all on ledger_private.operations from public,anon,authenticated;
+alter table ledger_private.operations enable row level security;
+-- A signed but logged-out JWT must not retain access until its expiry.
+-- Only an existing Auth session owned by the JWT subject is accepted.
+create function ledger_private.session_valid() returns boolean language sql stable security definer
+set search_path='' as $$
+ select coalesce(auth.jwt()->>'is_anonymous','false')='false'
+ and exists(select 1 from auth.sessions s
+  where s.user_id=auth.uid()
+  and s.id=case when auth.jwt()->>'session_id' ~ '^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$'
+    then (auth.jwt()->>'session_id')::uuid else null end
+  and (s.not_after is null or s.not_after>now()))
+$$;
 create function ledger_private.member(p_space uuid) returns boolean language sql stable security definer
-set search_path = '' as $$ select exists(select 1 from public.ledger_couple_members where space_id=p_space and user_id=auth.uid() and active) $$;
+set search_path = '' as $$ select ledger_private.session_valid() and exists(select 1 from public.ledger_couple_members where space_id=p_space and user_id=auth.uid() and active) $$;
 grant usage on schema ledger_private to authenticated;
 grant execute on function ledger_private.member(uuid) to authenticated;
 alter table public.ledger_couple_spaces enable row level security;
@@ -61,7 +73,7 @@ grant select on public.ledger_couple_spaces,public.ledger_couple_members,public.
 create function public.ledger_couple_create(p_name text,p_alias text,p_currency text) returns uuid
 language plpgsql security definer set search_path='' as $$
 declare s uuid; u uuid:=auth.uid(); begin
- if u is null then raise exception 'AUTH_REQUIRED' using errcode='42501'; end if;
+ if u is null or not ledger_private.session_valid() then raise exception 'AUTH_REQUIRED' using errcode='42501'; end if;
  if (select count(*) from public.ledger_couple_spaces where created_by=u and created_at>now()-interval '1 day')>=5 then raise exception 'RATE_LIMIT'; end if;
  insert into public.ledger_couple_spaces(name,base_currency,created_by) values(p_name,p_currency,u) returning id into s;
  insert into public.ledger_couple_members(space_id,user_id,slot,display_name) values(s,u,1,p_alias);
@@ -82,7 +94,7 @@ end $$;
 create function public.ledger_couple_join(p_token text,p_alias text) returns uuid
 language plpgsql security definer set search_path='' as $$
 declare inv public.ledger_couple_invites; s public.ledger_couple_spaces; u uuid:=auth.uid(); begin
- if u is null then raise exception 'AUTH_REQUIRED' using errcode='42501'; end if;
+ if u is null or not ledger_private.session_valid() then raise exception 'AUTH_REQUIRED' using errcode='42501'; end if;
  if p_token !~ '^[a-f0-9]{64}$' then raise exception 'INVALID_INVITE'; end if;
  select * into inv from public.ledger_couple_invites where token_hash=extensions.digest(p_token,'sha256');
  if not found then raise exception 'INVALID_INVITE'; end if;

@@ -16,6 +16,8 @@ const A = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
 const db = new PGlite({ extensions: { pgcrypto } });
 await db.exec(`create schema auth; create schema extensions; create role anon; create role authenticated;
  create table auth.users(id uuid primary key); insert into auth.users values('${A}'),('${B}'),('${C}');
+ create table auth.sessions(id uuid primary key,user_id uuid not null,not_after timestamptz);insert into auth.sessions(id,user_id)select id,id from auth.users;
+ create function auth.jwt() returns jsonb language sql stable as $$select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb$$;grant execute on function auth.jwt() to anon,authenticated;
  create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
  grant usage on schema auth to anon,authenticated; grant execute on function auth.uid() to anon,authenticated;`);
 await db.exec(
@@ -62,6 +64,9 @@ const server = createServer((req, res) => {
       await db.exec('begin');
       try {
         await db.query("select set_config('request.jwt.claim.sub',$1,true)", [u]);
+        await db.query("select set_config('request.jwt.claims',$1,true)", [
+          JSON.stringify({ session_id: u, is_anonymous: false }),
+        ]);
         await db.exec('set local role authenticated');
         let result;
         if (table.startsWith('rpc/')) {

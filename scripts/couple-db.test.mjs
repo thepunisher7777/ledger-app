@@ -9,7 +9,7 @@ const A = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
   C = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
 let n = 0;
 await db.exec(
-  `create schema auth;create schema extensions;create role anon;create role authenticated;create table auth.users(id uuid primary key);insert into auth.users values('${A}'),('${B}'),('${C}');create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth to anon,authenticated;grant execute on function auth.uid() to anon,authenticated;`,
+  `create schema auth;create schema extensions;create role anon;create role authenticated;create table auth.users(id uuid primary key);insert into auth.users values('${A}'),('${B}'),('${C}');create table auth.sessions(id uuid primary key,user_id uuid not null,not_after timestamptz);insert into auth.sessions(id,user_id)select id,id from auth.users;create function auth.jwt() returns jsonb language sql stable as $$select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb$$;grant execute on function auth.jwt() to anon,authenticated;create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth to anon,authenticated;grant execute on function auth.uid() to anon,authenticated;`,
 );
 await db.exec(
   fs.readFileSync(
@@ -19,7 +19,7 @@ await db.exec(
 );
 const as = async (u) => {
   await db.exec(
-    `reset role;select set_config('request.jwt.claim.sub','${u || ''}',false);set role ${u ? 'authenticated' : 'anon'}`,
+    `reset role;select set_config('request.jwt.claim.sub','${u || ''}',false);select set_config('request.jwt.claims','${JSON.stringify(u ? { session_id: u, is_anonymous: false } : {})}',false);set role ${u ? 'authenticated' : 'anon'}`,
   );
 };
 async function ok(name, fn) {
@@ -196,6 +196,49 @@ await ok('eliminación versionada y sin borrado de auditoría', async () => {
   assert.equal(r.revision, 3);
   await assert.rejects(db.query('delete from public.ledger_couple_activity'));
 });
+await db.exec('reset role');
+await db.query('delete from auth.sessions where user_id=$1', [A]);
+await as(A);
+await ok('JWT anterior tras logout no lee ni escribe aunque conserve el subject', async () => {
+  assert.equal((await db.query('select * from public.ledger_couple_entities')).rows.length, 0);
+  await assert.rejects(apply(payload, 3));
+  await assert.rejects(rpc('create', ['Sesión ficticia', 'A', 'EUR']));
+});
+await db.exec('reset role');
+await db.query('insert into auth.sessions(id,user_id)values($1,$1)', [A]);
+await as(A);
+await ok('sesión expirada bloqueada aun existiendo su fila', async () => {
+  await db.exec('reset role');
+  await db.query("update auth.sessions set not_after=now()-interval '1 minute' where user_id=$1", [
+    A,
+  ]);
+  await as(A);
+  assert.equal((await db.query('select * from public.ledger_couple_entities')).rows.length, 0);
+  await assert.rejects(apply(payload, 3));
+  await db.exec('reset role');
+  await db.query('update auth.sessions set not_after=null where user_id=$1', [A]);
+  await as(A);
+});
+await as(B);
+await ok('session_id de otro usuario no autoriza', async () => {
+  await db.query("select set_config('request.jwt.claims',$1,false)", [
+    JSON.stringify({ session_id: A, is_anonymous: false }),
+  ]);
+  assert.equal((await db.query('select * from public.ledger_couple_entities')).rows.length, 0);
+  await assert.rejects(apply(payload, 3));
+});
+await as(A);
+await ok('identidad anónima y session_id malformado rechazados', async () => {
+  for (const claims of [
+    { session_id: A, is_anonymous: true },
+    { session_id: 'invalid-uuid', is_anonymous: false },
+  ]) {
+    await db.query("select set_config('request.jwt.claims',$1,false)", [JSON.stringify(claims)]);
+    assert.equal((await db.query('select * from public.ledger_couple_entities')).rows.length, 0);
+    await assert.rejects(rpc('create', ['Ficticio', 'A', 'EUR']));
+  }
+});
+await as(A);
 await rpc('leave', [space]);
 await ok('saliente pierde lectura y escritura de inmediato', async () => {
   assert.equal((await db.query('select * from public.ledger_couple_entities')).rows.length, 0);
