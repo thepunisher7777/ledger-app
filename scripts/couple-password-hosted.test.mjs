@@ -16,6 +16,10 @@ for(const [name,code,c] of [[prefix+'a',codeA,A],[prefix+'b',codeB,B]]){
  assert.ifError((await c.auth.signInWithPassword({email:name+'@ledger-users.invalid',password})).error);
 }
 console.log('[OK] Two fictitious accounts created and signed in without email');
+// Exercise the browser's Functions invoke path, including non-2xx response parsing.
+const {createRequire}=await import('node:module');const Auth=createRequire(import.meta.url)('../couple-auth.js');
+await assert.rejects(Auth.identity(A,{action:'register',username:prefix+'a',password,newRecoveryCode:secret()}),e=>e.code==='account_exists'&&/Ya tengo cuenta/.test(e.message));
+console.log('[OK] Browser registration reports an actionable duplicate-account error');
 const id=await rpc(A,'create',{p_name:'FICTICIO sin correo',p_alias:'A ficticio',p_currency:'EUR'});
 const invite=await rpc(A,'invite',{p_space:id});await rpc(B,'join',{p_token:invite.token,p_alias:'B ficticio'});
 assert.equal((await B.from('ledger_couple_spaces').select('id')).data[0].id,id);
@@ -31,7 +35,7 @@ assert.ifError((await A.auth.signInWithPassword({email:prefix+'a@ledger-users.in
 assert.equal((await endpoint({action:'recover',username:prefix+'a',password:secret(),recoveryCode:codeA,newRecoveryCode:secret()})).status,400);
 assert.equal((await A.from('ledger_couple_spaces').select('id')).data[0].id,id);
 console.log('[OK] Recovery rotates code, blocks old password/JWT and preserves membership');
-assert.equal((await endpoint({action:'register',username:prefix+'a',password,newRecoveryCode:secret()})).status,400);
+assert.equal((await endpoint({action:'register',username:prefix+'a',password,newRecoveryCode:secret()})).status,409);
 assert.equal((await endpoint({action:'register',username:'ab',password:'short',newRecoveryCode:secret()})).status,400);
 console.log('[OK] Duplicate username and invalid input rejected');
 await rpc(A,'leave',{p_space:id});await A.auth.signOut();await B.auth.signOut();

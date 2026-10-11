@@ -98,16 +98,16 @@
       render(tab);
     });
   }
-  function login(mode = 'login') {
+  function login(mode = 'login', initialUsername = '') {
     const signup = mode === 'register', recover = mode === 'recover';
     const code = signup || recover ? window.LedgerCoupleAuth.recoveryCode() : '';
     form(
-      `<h2>${signup ? 'Crear identidad Pareja' : recover ? 'Recuperar acceso' : 'Entrar en Pareja'}</h2><p>Sin correo. Personal sigue funcionando sin registro.</p>${field('username', 'Nombre de usuario')}${recover ? field('recoveryCode', 'Código de recuperación anterior') : ''}${field('password', recover ? 'Nueva contraseña (mínimo 12 caracteres)' : 'Contraseña', '', 'password')}${signup || recover ? `${field('repeat', 'Repite la contraseña', '', 'password')}<p>Guarda este nuevo código antes de continuar. Permite recuperar tu cuenta; no lo compartas con tu pareja ni lo confundas con la invitación.</p><label>Código de recuperación<input readonly value="${code}"></label><label><input name="saved" type="checkbox" required> He guardado mi usuario y este código en un lugar seguro</label>` : ''}<p><button type="button" id="ce-auth-register">Crear cuenta</button> <button type="button" id="ce-auth-recover">Recuperar acceso</button> <button type="button" id="ce-auth-login">Ya tengo cuenta</button></p>`,
+      `<h2>${signup ? 'Crear identidad Pareja' : recover ? 'Recuperar acceso' : 'Entrar en Pareja'}</h2><p>Sin correo. Personal sigue funcionando sin registro.</p>${field('username', 'Nombre de usuario', initialUsername)}${recover ? field('recoveryCode', 'Código de recuperación anterior') : ''}${field('password', recover ? 'Nueva contraseña (mínimo 12 caracteres)' : 'Contraseña', '', 'password')}${signup || recover ? `${field('repeat', 'Repite la contraseña', '', 'password')}<p>Guarda este nuevo código antes de continuar. Permite recuperar tu cuenta; no lo compartas con tu pareja ni lo confundas con la invitación.</p><label>Código de recuperación<input readonly value="${code}"></label><label><input name="saved" type="checkbox" required> He guardado mi usuario y este código en un lugar seguro</label>` : ''}<p><button type="button" id="ce-auth-register">Crear cuenta</button> <button type="button" id="ce-auth-recover">Recuperar acceso</button> <button type="button" id="ce-auth-login">Ya tengo cuenta</button></p>`,
       signup ? 'Crear cuenta y entrar' : recover ? 'Cambiar contraseña y entrar' : 'Entrar',
     );
     $('ce-auth-register').onclick = () => login('register');
     $('ce-auth-recover').onclick = () => login('recover');
-    $('ce-auth-login').onclick = () => login();
+    $('ce-auth-login').onclick = () => login('login', document.querySelector('[name="username"]')?.value || '');
     submit(async (v) => {
       const A = window.LedgerCoupleAuth;
       if (signup || recover) {

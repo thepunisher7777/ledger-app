@@ -28,7 +28,8 @@ Deno.serve(async req => {
   const email=`${username}@ledger-users.invalid`;
   if(v.action==='register') {
    const {data,error}=await admin.auth.admin.createUser({email,password:v.password,email_confirm:true,app_metadata:{ledger_identity:'username-v1'}});
-   if(error||!data.user) return reply(400,{error:'No se ha podido crear la cuenta. Prueba otro usuario.'});
+   if(error?.code==='email_exists'||error?.code==='user_already_exists') return reply(409,{code:'account_exists',error:'Este usuario ya tiene cuenta. Pulsa «Ya tengo cuenta» y entra con la contraseña que usaste al crearla. El código nuevo de este formulario no sustituye al código original. Si no recuerdas la contraseña, usa «Recuperar acceso» con tu código original.'});
+   if(error||!data.user) return reply(400,{error:'No se ha podido crear la cuenta. Revisa los datos o prueba otro usuario.'});
    const saved=await admin.rpc('ledger_identity_register',{p_username:username,p_user:data.user.id,p_hash:recoveryHash});
    if(saved.error) {await admin.auth.admin.deleteUser(data.user.id);return reply(503,{error:'No se ha podido crear la cuenta'});}
    return reply(200,{ok:true});
