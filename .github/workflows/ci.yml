@@ -37,3 +37,22 @@ jobs:
 
       - name: Regressions, multicurrency, XML, Couple privacy and no-email identity
         run: npm test
+
+  hosted-couple:
+    name: Live Couple registration and recovery
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[verify-couple]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Test fictional accounts, invitation, recovery and access control
+        run: npm run test:couple:password:hosted
+        env:
+          COUPLE_E2E_URL: https://tsmdkrllkafmlqcwzsii.supabase.co
+          COUPLE_E2E_PUBLIC_KEY: sb_publishable_8qqomT5Kq4W5KcwGhw-lVw_yCPcDmQ_
+          COUPLE_E2E_ALLOW_MUTATIONS: fictional-only

@@ -11,13 +11,13 @@ const prefix='test_'+Date.now().toString(36);
 const A=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}}),B=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
 async function endpoint(body){const r=await fetch(url+'/functions/v1/couple-identity',{method:'POST',headers:{apikey:key,'Content-Type':'application/json'},body:JSON.stringify(body)});return {status:r.status,body:await r.json()};}
 async function rpc(c,n,args){const r=await c.rpc('ledger_couple_'+n,args);assert.ifError(r.error);return r.data;}
+const {createRequire}=await import('node:module');const Auth=createRequire(import.meta.url)('../couple-auth.js');
 for(const [name,code,c] of [[prefix+'a',codeA,A],[prefix+'b',codeB,B]]){
- const r=await endpoint({action:'register',username:name,password,newRecoveryCode:code});assert.equal(r.status,200,JSON.stringify(r.body));
+ await Auth.identity(c,{action:'register',username:name,password,newRecoveryCode:code});
  assert.ifError((await c.auth.signInWithPassword({email:name+'@ledger-users.invalid',password})).error);
 }
-console.log('[OK] Two fictitious accounts created and signed in without email');
+console.log('[OK] Two fictitious accounts created through browser SDK Functions path and signed in without email');
 // Exercise the browser's Functions invoke path, including non-2xx response parsing.
-const {createRequire}=await import('node:module');const Auth=createRequire(import.meta.url)('../couple-auth.js');
 await assert.rejects(Auth.identity(A,{action:'register',username:prefix+'a',password,newRecoveryCode:secret()}),e=>e.code==='account_exists'&&/Ya tengo cuenta/.test(e.message));
 console.log('[OK] Browser registration reports an actionable duplicate-account error');
 const id=await rpc(A,'create',{p_name:'FICTICIO sin correo',p_alias:'A ficticio',p_currency:'EUR'});
