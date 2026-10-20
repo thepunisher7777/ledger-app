@@ -40,4 +40,4 @@ Sin login obligatorio. La sincronización futura será opcional.
 
 Preview 2 permite crear una identidad con usuario y contraseña, guardar un código secreto de recuperación y compartir una invitación por enlace/código. No necesita Brevo ni SMTP. El acceso y la recuperación ya se han probado contra Supabase real con identidades ficticias. Personal no requiere registro ni se sincroniza. El usuario probó la vista previa y autorizó integrarla en la publicación habitual el 2026-10-10. Véase [configuración](docs/COUPLE_SETUP.md).
 
-En la publicación habitual la conexión pública de Pareja está preparada; no hace falta introducir claves. Cada persona crea su propia identidad. Mantener sesión es opcional mediante la configuración de conexión y solo para dispositivos privados.
+En la publicación habitual la conexión pública de Pareja está preparada; no hace falta introducir claves. Cada persona crea su propia identidad. Mantener sesión está activado por defecto y puede desactivarse al entrar en dispositivos compartidos. Se recuerda el último espacio seleccionado. Véase [sesión y verificación](docs/COUPLE_SESSION.md).
