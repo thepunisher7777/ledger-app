@@ -2,6 +2,8 @@
   'use strict';
   const C = window.LedgerCoupleCore,
     S = window.LedgerCoupleSync;
+  const SPACE_KEY = 'ledger.workspace.v1';
+  let connectionConfig = null, authSubscription = null, resuming = null;
   let active = false,
     sync = null,
     client = null,
@@ -62,16 +64,21 @@
     };
   }
   function setupClient(config) {
+    config = S.validateConfig(config);
     if (timer) {
       clearInterval(timer);
       timer = null;
     }
     if (sync?.channel) client.removeChannel(sync.channel);
-    if (client) client.auth.signOut({ scope: 'local' });
-    config = S.validateConfig(config);
+    // Rebuilding the connection must not revoke the stored session. In
+    // particular an async signOut here can erase a freshly restored login.
+    authSubscription?.unsubscribe();
+    client?.auth.stopAutoRefresh?.();
+    connectionConfig = config;
     client = window.supabase.createClient(config.url, config.key, {
       auth: {
         persistSession: config.remember,
+        storage: window.localStorage,
         storageKey: 'ledger.couple.auth.v1:' + new URL(config.url).hostname,
         autoRefreshToken: true,
         detectSessionInUrl: false,
@@ -85,16 +92,39 @@
         if (active) render(tab);
       },
     });
+    const owner = sync;
+    authSubscription = client.auth.onAuthStateChange?.((event) => {
+      // Auth callbacks run inside the SDK lock; schedule further Auth work.
+      if (event === 'SIGNED_OUT') setTimeout(async () => {
+        if (sync !== owner) return;
+        await owner.clear();
+        owner.user = null;
+        if (active) render(tab);
+      }, 0);
+    })?.data?.subscription || null;
+  }
+  function resumeSession() {
+    if (!active || !sync) return Promise.resolve();
+    if (resuming?.owner === sync) return resuming.promise;
+    const owner = sync;
+    const promise = owner.resume().then(() => {
+      if (sync === owner && active) render(tab);
+    }).catch((e) => notify(e.message)).finally(() => {
+      if (resuming?.owner === owner) resuming = null;
+    });
+    resuming = { owner, promise };
+    return promise;
   }
   function configure() {
     form(
-      `<h2>Conectar Pareja</h2><p>Necesita un proyecto Supabase con la migración de Ledger aplicada. Solo URL y clave pública; nunca una clave administrativa. Configurar esto no sube tu espacio Personal.</p>${field('url', 'URL del proyecto', 'https://')}${field('key', 'Clave pública publishable / anon')}<label><input name=remember type=checkbox> Mantener sesión Pareja en este dispositivo privado (permite recuperar la caché offline)</label><p>No hay backend configurado por defecto. <a href="docs/COUPLE_SETUP.md" target="_blank" rel="noopener noreferrer">Instrucciones</a></p>`,
+      `<h2>Conectar Pareja</h2><p>Configura la conexión compartida. Personal permanece en este dispositivo.</p>${field('url', 'URL del proyecto', connectionConfig?.url || 'https://')}${field('key', 'Clave pública publishable / anon', connectionConfig?.key || '')}<label><input name=remember type=checkbox ${connectionConfig?.remember !== false ? 'checked' : ''}> Mantener sesión Pareja en este dispositivo privado</label><p><a href="docs/COUPLE_SETUP.md" target="_blank" rel="noopener noreferrer">Instrucciones</a></p>`,
       'Guardar configuración',
     );
     submit(async (v) => {
       const cfg = S.validateConfig({ ...v, remember: v.remember === 'on' });
       localStorage.setItem(S.CONFIG_KEY, JSON.stringify(cfg));
       setupClient(cfg);
+      await resumeSession();
       render(tab);
     });
   }
@@ -105,11 +135,21 @@
       `<h2>${signup ? 'Crear identidad Pareja' : recover ? 'Recuperar acceso' : 'Entrar en Pareja'}</h2><p>Sin correo. Personal sigue funcionando sin registro.</p>${field('username', 'Nombre de usuario', initialUsername)}${recover ? field('recoveryCode', 'Código de recuperación anterior') : ''}${field('password', recover ? 'Nueva contraseña (mínimo 12 caracteres)' : 'Contraseña', '', 'password')}${signup || recover ? `${field('repeat', 'Repite la contraseña', '', 'password')}<p>Guarda este nuevo código antes de continuar. Permite recuperar tu cuenta; no lo compartas con tu pareja ni lo confundas con la invitación.</p><label>Código de recuperación<input readonly value="${code}"></label><label><input name="saved" type="checkbox" required> He guardado mi usuario y este código en un lugar seguro</label>` : ''}<p><button type="button" id="ce-auth-register">Crear cuenta</button> <button type="button" id="ce-auth-recover">Recuperar acceso</button> <button type="button" id="ce-auth-login">Ya tengo cuenta</button></p>`,
       signup ? 'Crear cuenta y entrar' : recover ? 'Cambiar contraseña y entrar' : 'Entrar',
     );
+    const rememberLabel = document.createElement('label');
+    const rememberInput = document.createElement('input');
+    rememberInput.type = 'checkbox';
+    rememberInput.name = 'rememberSession';
+    rememberInput.checked = connectionConfig?.remember !== false;
+    rememberLabel.append(rememberInput, ' Mantener sesión en este dispositivo privado');
+    $('couple-form').querySelector('[type=submit]').before(rememberLabel);
     $('ce-auth-register').onclick = () => login('register');
     $('ce-auth-recover').onclick = () => login('recover');
     $('ce-auth-login').onclick = () => login('login', document.querySelector('[name="username"]')?.value || '');
     submit(async (v) => {
       const A = window.LedgerCoupleAuth;
+      const cfg = { ...connectionConfig, remember: v.rememberSession === 'on' };
+      localStorage.setItem(S.CONFIG_KEY, JSON.stringify(cfg));
+      if (cfg.remember !== connectionConfig.remember) setupClient(cfg);
       if (signup || recover) {
         if (v.password !== v.repeat) throw Error('Las contraseñas no coinciden.');
         if (v.saved !== 'on') throw Error('Guarda el código de recuperación antes de continuar.');
@@ -732,6 +772,7 @@
   }
   function switchSpace(value) {
     active = value === 'couple';
+    try { localStorage.setItem(SPACE_KEY, active ? 'couple' : 'personal'); } catch {}
     document.querySelectorAll('[data-ledger-space]').forEach((b) => {
       const yes = (b.dataset.ledgerSpace === 'couple') === active;
       b.classList.toggle('active', yes);
@@ -743,7 +784,7 @@
     }
     if (active) {
       render(tab);
-      if (sync && !sync.user) sync.resume().catch((e) => notify(e.message));
+      if (sync && !sync.user) resumeSession();
       if (sync?.space) sync.flush().catch((e) => notify(e.message));
     } else {
       if (sync?.channel) {
@@ -779,9 +820,16 @@
       if (config) setupClient(JSON.parse(config));
       else if (window.LedgerCoupleDefaultConfig) setupClient(window.LedgerCoupleDefaultConfig);
     } catch {}
-    if (window.LedgerCoupleInvitation?.pending) switchSpace('couple');
+    if (window.LedgerCoupleInvitation?.pending || localStorage.getItem(SPACE_KEY) === 'couple') switchSpace('couple');
     window.addEventListener('online', () => {
-      if (active && sync?.space) sync.flush().catch((e) => notify(e.message));
+      resumeSession().then(() => {
+        if (active && sync?.space) sync.flush().catch((e) => notify(e.message));
+      });
+    });
+    window.addEventListener('pageshow', () => resumeSession());
+    window.addEventListener('focus', () => resumeSession());
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') resumeSession();
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

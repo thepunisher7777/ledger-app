@@ -1,3 +1,10 @@
+## Beta 1.6.0 — Persistencia de Pareja — 2026-10-20
+
+- Mantener sesión activado por defecto en la conexión publicada, con opción para desactivarlo al entrar en dispositivos compartidos.
+- Restauración del último espacio seleccionado y de la sesión al reabrir o volver desde segundo plano.
+- Reconfigurar la conexión ya no cierra una sesión de forma asíncrona; el cierre explícito sigue revocando acceso y limpiando la caché compartida.
+- Los tokens siguen renovándose con Supabase; no se almacenan contraseñas ni códigos de recuperación ni se alarga la vigencia del JWT.
+
 ## Beta 1.6.0 — 2026-10-10
 
 - Modo Pareja nativo disponible con conexión pública preparada, sin configuración técnica manual.
