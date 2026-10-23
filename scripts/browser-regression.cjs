@@ -35,7 +35,7 @@ const server=http.createServer(async(req,res)=>{
    await page.locator('#fab').click();await page.locator('#tx-amount').fill('12,34');await page.locator('#tx-note').fill('FICTICIO · compra de ejemplo');await page.locator('#save-transaction').click();
    const saved=await page.evaluate(()=>localStorage.getItem('flowfi.public.v27'));assert.equal(JSON.parse(saved).transactions[0].amount,12.34);fixtureBackup=saved;
    await fit();await page.waitForFunction(()=>!document.querySelector('#toast').classList.contains('show'));await page.screenshot({path:path.join(out,'ledger-home-'+label+'.png'),fullPage:false});
-   await page.locator('[data-route="stats"]').click();await page.locator('#export-excel-stats').waitFor();await fit();
+   await page.locator('[data-route="stats"]').click();await page.locator('#export-excel-stats').waitFor();await fit();await page.locator('[data-route="settings"]').click();await page.locator('#export-json').waitFor();
    await page.reload();assert.equal(await page.evaluate(()=>localStorage.getItem('flowfi.public.v27')),saved);
    await page.goto(base+'demo/');await page.locator('#add-demo').click();await page.locator('#movement-note').fill('FICTICIO · práctica');await page.locator('#movement-amount').fill('19.99');await page.locator('#movement-form .primary').click();
    assert.ok((await page.locator('#transactions').innerText()).includes('FICTICIO · práctica'));await fit();assert.equal(await page.evaluate(()=>localStorage.getItem('flowfi.public.v27')),saved);
