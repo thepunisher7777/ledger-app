@@ -11,10 +11,6 @@
   const LEGACY_NAMESPACE = 'thepunisher7777.github.io';
   const priorFetch = window.fetch.bind(window);
 
-  const ALLOWED_PROPERTIES = new Set([
-    'token','distinct_id','$device_id','$session_id','$window_id','$lib','$lib_version','$process_person_profile',
-    'product','telemetry_schema','legacy_action','event_key','app_version','screen','feature','error_type','platform','version'
-  ]);
 
   function consentGranted(){
     try{return localStorage.getItem(CONSENT_KEY)==='yes';}
@@ -22,16 +18,7 @@
   }
 
   function sanitizeEvent(event){
-    if(!event || !String(event.event||'').startsWith('ledger_')) return null;
-    const source=event.properties||{};
-    const clean={};
-    for(const key of ALLOWED_PROPERTIES){
-      if(Object.prototype.hasOwnProperty.call(source,key)) clean[key]=source[key];
-    }
-    event.properties=clean;
-    event.$set={};
-    event.$set_once={};
-    return event;
+    return window.LedgerAnalyticsPrivacy?.sanitizeEvent(event) || null;
   }
 
   function hardenPostHog(){
@@ -83,6 +70,6 @@
   };
 
   window.addEventListener('storage',event=>{if(event.key===CONSENT_KEY)setTimeout(hardenPostHog,0);});
-  setInterval(hardenPostHog,1000);
+  // Consent is checked on each capture; no background polling.
   hardenPostHog();
 })();

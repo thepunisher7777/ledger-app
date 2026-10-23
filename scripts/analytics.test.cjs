@@ -1,0 +1,40 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const {JSDOM}=require('jsdom');
+const root=path.resolve(__dirname,'..');
+function fixture(consent='no',fail=false){
+ const calls=[],external=[];let config,inits=0,out=false;
+ const dom=new JSDOM('<!doctype html><script></script>',{url:'https://ledger.test/?private=secret#invite=secret',runScripts:'outside-only'}),w=dom.window;
+ w.Response=Response;w.fetch=async(...args)=>{external.push(args);throw Error('unexpected real request');};
+ w.localStorage.setItem('ledger.analytics.consent.v1',consent);w.localStorage.setItem('flowfi.public.v27','PRIVATE_SENTINEL');w.LedgerAppVersion='Beta 1.6.1';
+ w.posthog={init(token,c){inits++;if(fail)throw Error('SDK blocked');config=c;},set_config(c){config={...config,...c};},opt_in_capturing(){out=false;},opt_out_capturing(){out=true;},has_opted_out_capturing:()=>out,capture(event,properties){const clean=config.before_send({event,properties:{...properties,$current_url:w.location.href,amount:123,note:'PRIVATE',email:'private@example.test'},$set:{secret:'PRIVATE'}});if(clean)calls.push(clean);}};
+ for(const file of ['posthog-bridge.js','arx-analytics-guard.js'])w.eval(fs.readFileSync(path.join(root,file),'utf8'));
+ return {w,dom,calls,external,get config(){return config;},get inits(){return inits;}};
+}
+(async()=>{
+ const a=fixture();
+ let response=await a.w.fetch('https://arx.local/telemetry/ledger/ledger-feature/transaction-saved?appVersion=Beta%201.6.1');
+ assert.equal((await response.json()).ok,false);assert.equal(a.inits,0);assert.equal(a.calls.length,0);assert.equal(a.external.length,0);await a.w.fetch('https://arx.local/telemetry/ledger/ledger-unknown/private-data');assert.equal(a.external.length,0);a.dom.window.close();
+ console.log('[OK] No consent: zero SDK initialization, no external network, valid JSON response (no 204 body error)');
+ const b=fixture('yes');await b.w.LedgerTelemetry.feature('transaction-saved');
+ assert.equal(b.calls.length,1);assert.equal(b.calls[0].properties.feature,'transaction-saved');
+ const text=JSON.stringify(b.calls);for(const secret of ['PRIVATE','example.test','private=','invite=','amount','note','email'])assert.ok(!text.includes(secret),secret);
+ assert.equal(b.calls[0].properties.$geoip_disable,true);assert.equal(b.calls[0].properties.$process_person_profile,false);
+ assert.equal(b.config.autocapture,false);assert.equal(b.config.disable_session_recording,true);assert.equal(b.config.person_profiles,'never');
+ assert.equal(b.w.LedgerAnalyticsPrivacy.sanitizeEvent({event:'$pageview',properties:{}}),null);
+ assert.equal(b.w.LedgerAnalyticsPrivacy.sanitizeEvent({event:'ledger_feature_used',properties:{feature:'private@example.test'}}),null);
+ assert.equal(await b.w.LedgerTelemetry.feature('private@example.test'),false);
+ console.log('[OK] Strict event/value allowlist removes financial values, URLs, geolocation and profile writes');
+ const results=await Promise.all([b.w.LedgerTelemetry.milestone('first-transaction'),b.w.LedgerTelemetry.milestone('first-transaction')]);
+ assert.equal(results.filter(Boolean).length,1);assert.equal(await b.w.LedgerTelemetry.milestone('first-transaction'),false);
+ assert.equal(b.calls.filter(e=>e.event==='ledger_milestone').length,1);
+ assert.equal(b.w.localStorage.getItem('flowfi.public.v27'),'PRIVATE_SENTINEL');
+ console.log('[OK] Concurrent and repeated milestones deduplicated without reading financial storage');
+ b.w.localStorage.setItem('ledger.analytics.consent.v1','no');const n=b.calls.length;
+ await b.w.LedgerTelemetry.feature('budget-saved');assert.equal(b.calls.length,n);
+ assert.equal(b.w.LedgerAnalyticsPrivacy.sanitizeEvent({event:'ledger_active',properties:{}}),null);b.dom.window.close();
+ console.log('[OK] Revoking consent blocks future events including already queued before_send');
+ const c=fixture('yes',true);c.w.console.warn=()=>{};assert.equal(await c.w.LedgerTelemetry.milestone('first-budget'),false);assert.equal(c.w.localStorage.getItem('ledger.analytics.milestone.v1.first-budget'),null);c.dom.window.close();
+ console.log('[OK] SDK failure does not mark a milestone as submitted or affect finance');
+ const source=fs.readFileSync(path.join(root,'index.html'),'utf8');assert.ok(!source.includes("analyticsEmit('ledger-install'"));assert.ok(source.includes("addEventListener('appinstalled'"));assert.ok(source.includes("milestone('verified-pwa-install')"));
+ console.log('[OK] Legacy consent measurement no longer emitted as an installation; appinstalled milestone separate');
+})().catch(e=>{console.error(e);process.exitCode=1;});

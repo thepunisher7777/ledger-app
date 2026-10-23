@@ -2,15 +2,18 @@
   "name": "ledger-audit",
   "private": true,
   "scripts": {
-    "test": "node scripts/audit.cjs && node scripts/multicurrency-audit.cjs && node scripts/future-cycles.test.cjs && node scripts/sw-audit.cjs && npm run test:couple",
-    "test:couple": "node scripts/couple-assets.test.cjs && node scripts/couple-invite.test.cjs && node --check couple-core.js && node --check couple-sync.js && node --check couple-ui.js && node scripts/couple-db.test.mjs && node scripts/couple-integration.test.mjs && node scripts/couple-ui.test.cjs && node scripts/couple-session.test.cjs && node scripts/couple-auth.test.cjs && node scripts/couple-auth-db.test.mjs",
+    "test": "node scripts/audit.cjs && node scripts/multicurrency-audit.cjs && node scripts/future-cycles.test.cjs && node scripts/sw-audit.cjs && npm run test:couple && npm run test:growth",
+    "test:couple": "node scripts/couple-assets.test.cjs && node scripts/couple-invite.test.cjs && node --check couple-core.js && node --check couple-sync.js && node --check couple-ui.js && node scripts/couple-db.test.mjs && node scripts/couple-integration.test.mjs && node scripts/couple-ui.test.cjs && node scripts/couple-session.test.cjs && node scripts/couple-auth.test.cjs && node scripts/couple-auth-db.test.mjs && node scripts/couple-session-race.test.cjs",
     "test:couple:hosted": "node scripts/couple-hosted.test.mjs",
-    "test:couple:password:hosted": "node scripts/couple-password-hosted.test.mjs"
+    "test:couple:password:hosted": "node scripts/couple-password-hosted.test.mjs",
+    "test:growth": "node scripts/onboarding-demo.test.cjs && node --test scripts/growth-tools.test.cjs && node scripts/analytics.test.cjs && node scripts/growth-app.test.cjs && node scripts/financial-lifecycle.test.cjs",
+    "test:browser": "node scripts/browser-regression.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.8",
     "@supabase/supabase-js": "2.117.3",
-    "jsdom": "30.1.2"
+    "jsdom": "30.1.2",
+    "playwright-core": "1.62.1"
   },
-  "version": "1.6.0"
+  "version": "1.6.1"
 }

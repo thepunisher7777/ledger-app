@@ -1,3 +1,15 @@
+## Beta 1.6.1 — 2026-10-23
+
+- Guía de tres pasos reabrible y demo funcional independiente, en memoria y con datos ficticios.
+- Landing y calculadora local de reparto 50/50 o proporcional, con SEO y enlaces compartibles sin importes.
+- Descarta respuestas Auth/RPC/lecturas de sesiones antiguas después de cerrar sesión; pruebas de carrera.
+- Telemetría con consentimiento: hitos y acciones de valor, validación de eventos y valores, sin geolocalización, URLs ni datos financieros. Se deja de emitir la falsa «instalación» de primera medición.
+- Corrección de Response 204 con cuerpo, guardas sin sondeo periódico, actividad al volver a la app y deduplicación de hitos.
+- Caché offline por ruta y lista cerrada de recursos públicos; evita sustituir demo/landing por el inicio.
+- Presupuesto solo se confirma cuando se guarda; zoom móvil habilitado. Pruebas ampliadas y documentación real de métricas/Premium.
+- Préstamos liquidados excluidos de compromisos/previsiones; historial conservado. Validación alojada de dos identidades ficticias y suite WebKit/actualización/reversión de PWA.
+- Sin migraciones, cambios de datos reales, pagos ni restricciones de funciones gratuitas. Estado de publicación en el PR.
+
 ## Beta 1.6.0 — Ciclos futuros — 2026-10-23
 
 - Selector mensual con próximos 12 ciclos, todos los ciclos con movimientos registrados y salto directo a cualquier mes.

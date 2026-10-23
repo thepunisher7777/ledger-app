@@ -1,0 +1,5 @@
+# GitHub Pages project sites cannot control the origin-level /robots.txt.
+# This file documents the desired policy if hosted at an origin root later.
+User-agent: *
+Allow: /
+Sitemap: https://thepunisher7777.github.io/ledger-app/sitemap.xml

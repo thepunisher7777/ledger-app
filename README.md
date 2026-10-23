@@ -1,6 +1,14 @@
-# LEDGER by ARX · Beta 1.6.0
+# LEDGER by ARX · Beta 1.6.1
 
-Vista previa en `feature/couple-mode`; la app publicada permanece en Beta 1.5.0. Personal conserva datos y backups sin login. El nuevo selector Pareja requiere un backend Supabase autorizado para compartir datos reales: no hay conexión configurada ni datos simulados en la aplicación.
+La versión publicada al iniciar esta revisión era Beta 1.6.0 (`main` c1d4145), con Pareja conectado a Supabase. La entrega Beta 1.6.1 se valida y publica mediante el PR #6; el estado exacto lo determinan Actions y GitHub Pages. Personal conserva `flowfi.public.v27`, sus backups y uso sin login. Solo el espacio Pareja utiliza identidad y sincronización opcionales.
+
+- [Aceptación, publicación y comprobación manual](docs/RELEASE_1_6_1.md)
+- [Auditoría, métricas y estado de entrega](docs/GROWTH_AUDIT.md)
+- [Landing y calculadora](docs/GROWTH_WEB.md)
+- [Seguridad y corrección de sesión](docs/SECURITY_GROWTH_AUDIT.md)
+- [SEO, contenido de cuatro semanas y Premium](docs/GROWTH_PREMIUM_RESEARCH.md)
+
+Novedades 1.6.1: guía inicial, demo independiente sin persistencia, calculadora local, landing, telemetría de valor con consentimiento, caché de rutas públicas y protección frente a respuestas de sesiones antiguas. Premium sigue siendo un diseño futuro: no hay cobros ni restricciones nuevas.
 
 Implementados módulos nativos, invitaciones seguras, RLS/RPC, gastos y repartos, fondos/aportaciones, compensaciones, presupuestos/objetivos, estadísticas, reglas recurrentes manuales, cola offline con conflictos, exportación/restauración separada y desvinculación.
 

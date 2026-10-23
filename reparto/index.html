@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Calculadora de gastos en pareja: 50/50 o proporcional | Ledger</title>
+  <meta name="description" content="Calcula cómo repartir alquiler y gastos en pareja: compara el 50/50 con un reparto proporcional a vuestros ingresos. Gratis, sin registro y sin enviar tus cifras.">
+  <meta name="theme-color" content="#07111f"><link rel="canonical" href="https://thepunisher7777.github.io/ledger-app/reparto/">
+  <meta property="og:type" content="website"><meta property="og:locale" content="es_ES"><meta property="og:title" content="¿50/50 o proporcional? Calcula vuestros gastos en pareja">
+  <meta property="og:description" content="Compara ambos métodos de reparto con una herramienta gratuita y privada. Las cifras se calculan en tu dispositivo.">
+  <meta property="og:url" content="https://thepunisher7777.github.io/ledger-app/reparto/"><meta property="og:image" content="https://thepunisher7777.github.io/ledger-app/ledger-icon-512-v2.png"><meta property="og:image:alt" content="Icono de Ledger by ARX">
+  <meta name="twitter:card" content="summary"><meta name="twitter:title" content="Calculadora de gastos en pareja | Ledger"><meta name="twitter:description" content="Compara 50/50 y proporcional sin registro ni envío de cifras.">
+  <link rel="icon" href="../ledger-icon-192-v2.png"><link rel="stylesheet" href="../marketing.css">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Calculadora de gastos en pareja de Ledger","url":"https://thepunisher7777.github.io/ledger-app/reparto/","description":"Calculadora local para comparar reparto igualitario y proporcional de gastos comunes.","applicationCategory":"FinanceApplication","operatingSystem":"Web","inLanguage":"es","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"}}</script>
+</head>
+<body>
+<a class="skip" href="#contenido">Saltar al contenido</a>
+<header class="container nav"><a class="brand" href="../descubre/"><img src="../ledger-icon-192-v2.png" width="42" height="42" alt=""><span>LEDGER<small>BY ARX</small></span></a><nav class="navlinks" aria-label="Principal"><a href="../descubre/">Conoce Ledger</a><a href="../" class="button small">Abrir Ledger ↗</a></nav></header>
+<main id="contenido" class="container">
+  <div class="breadcrumb"><a href="../descubre/">Ledger</a><span aria-hidden="true">/</span><span>Calculadora de gastos en pareja</span></div>
+  <section class="calc-hero"><div class="eyebrow">Una conversación más fácil sobre el dinero</div><h1>¿Cómo repartimos<br>los gastos en pareja?</h1><p class="lead">Compara pagar lo mismo y aportar según vuestros ingresos. Ver las dos opciones ayuda a decidir juntos; ninguna fórmula sustituye vuestro acuerdo.</p></section>
+  <section class="calculator" aria-label="Calculadora de reparto">
+    <form id="split-form" class="card calculator-form" autocomplete="off">
+      <h2>Vuestro mes, en cuatro cifras</h2>
+      <p class="subtle">Usa ingresos netos mensuales. Importes en euros, sin separadores de miles y con hasta dos decimales.</p>
+      <div class="fields">
+        <div class="field"><label for="income-a">Ingresos de la persona A</label><div class="input-money"><input id="income-a" name="incomeA" inputmode="decimal" type="text" placeholder="0,00" required maxlength="15" aria-describedby="local-privacy"><span aria-hidden="true">€/mes</span></div></div>
+        <div class="field"><label for="income-b">Ingresos de la persona B</label><div class="input-money"><input id="income-b" name="incomeB" inputmode="decimal" type="text" placeholder="0,00" required maxlength="15"><span aria-hidden="true">€/mes</span></div></div>
+        <div class="field"><label for="rent">Alquiler o hipoteca compartida</label><div class="input-money"><input id="rent" name="rent" inputmode="decimal" type="text" placeholder="0,00" required maxlength="15"><span aria-hidden="true">€/mes</span></div></div>
+        <div class="field"><label for="other">Otros gastos comunes</label><div class="input-money"><input id="other" name="other" inputmode="decimal" type="text" value="0" required maxlength="15"><span aria-hidden="true">€/mes</span></div></div>
+      </div>
+      <p class="error" id="form-error" role="alert"></p>
+      <button class="button" type="submit">Comparar repartos <span aria-hidden="true">→</span></button>
+      <button class="example-button" type="button" id="example">Probar con un ejemplo ficticio</button>
+      <p class="example-badge" id="example-badge" hidden>ESTÁS VIENDO UN EJEMPLO FICTICIO</p>
+      <p class="subtle" id="local-privacy">Tus cifras se calculan aquí. Esta herramienta no las envía, no las guarda y no solicita registro. El enlace que compartas tampoco las incluye.</p>
+    </form>
+    <div>
+      <div class="result-empty" id="empty-state"><span aria-hidden="true">⇄</span><h2>Dos formas de aportar.<br>Una decisión compartida.</h2><p>Introduce los ingresos y los gastos comunes para ver cuánto aporta cada persona y cuánto le queda después.</p></div>
+      <div id="results" hidden>
+        <p class="result-summary" id="result-summary" tabindex="-1" aria-live="polite">Gastos comunes del mes: <b id="total-common"></b>. Los repartos se ajustan a céntimos para que las aportaciones sumen exactamente el total.</p>
+        <div class="warning" id="budget-warning" hidden>Los gastos comunes superan los ingresos conjuntos introducidos. El cálculo muestra el reparto, pero deja un déficit mensual que conviene revisar juntos.</div>
+        <div class="comparison">
+          <article class="method"><h2>A medias · 50/50</h2><p class="description">La misma aportación en euros para ambos, con ajuste de un céntimo cuando haga falta.</p><div class="person-result"><span>Persona A aporta</span><strong id="equal-a"></strong><small id="equal-remaining-a"></small><small id="equal-effort-a"></small></div><div class="person-result"><span>Persona B aporta</span><strong id="equal-b"></strong><small id="equal-remaining-b"></small><small id="equal-effort-b"></small></div></article>
+          <article class="method proportional"><h2>Según los ingresos</h2><p class="description">Cada persona cubre la proporción que representa su ingreso en el total conjunto.</p><div id="proportional-values"><div class="person-result"><span>Persona A aporta</span><strong id="proportional-a"></strong><small id="proportional-remaining-a"></small><small id="proportional-effort-a"></small></div><div class="person-result"><span>Persona B aporta</span><strong id="proportional-b"></strong><small id="proportional-remaining-b"></small><small id="proportional-effort-b"></small></div></div><p class="subtle" id="no-income" hidden>Con ambos ingresos a cero no existe una proporción que calcular. El reparto al 50/50 sigue mostrando la aportación necesaria.</p></article>
+        </div>
+        <p class="result-note">“Después de aportar” resta solo los gastos comunes que has indicado. No incluye otros gastos personales, deudas ni impuestos. Estos resultados son una ayuda para conversar, no una recomendación financiera individual.</p>
+        <div class="calc-share"><button id="share-tool" class="button secondary" type="button">Compartir la calculadora ↗</button><p>Se comparte la herramienta, sin ingresos, importes ni resultados personales.</p><div id="share-fallback" hidden><label class="subtle" for="share-link">Enlace público para copiar</label><input id="share-link" readonly style="width:100%;padding:12px;background:#071421;color:var(--text);border:1px solid var(--line);border-radius:10px"></div><div id="share-status" class="status" role="status"></div></div>
+      </div>
+    </div>
+  </section>
+  <section class="section calc-explainer"><div class="eyebrow">Entender el reparto</div><h2>Lo justo depende<br>de vuestro acuerdo.</h2><h3>¿Qué significa repartir al 50/50?</h3><p>Se divide el gasto común en dos partes iguales. Si tenéis ingresos distintos, aportar la misma cantidad puede representar un esfuerzo mayor para quien cobra menos. Por eso la calculadora muestra también el porcentaje de cada ingreso dedicado a gastos comunes.</p><h3>¿Cómo se calcula el reparto proporcional?</h3><p>Se divide el ingreso de cada persona entre la suma de ambos y se multiplica esa proporción por el gasto común. Si una persona aporta el 40 % de los ingresos conjuntos, su parte será el 40 % del gasto acordado. Los céntimos se ajustan al final para que no sobre ni falte dinero.</p><h3>¿Qué gastos deberíamos incluir?</h3><p>Podéis empezar por alquiler o hipoteca, suministros y compra compartida. Acordad qué consideráis común y qué sigue siendo personal. Si compartís una vivienda en propiedad o pagáis una deuda de uno de los miembros, el cálculo no decide por vosotros sus implicaciones jurídicas o patrimoniales.</p><h3>¿Y si uno de los dos no tiene ingresos?</h3><p>El método proporcional asigna el gasto a quien tiene ingresos. Puede ser una referencia temporal, pero conviene hablar de ahorros, tareas de cuidado y otras circunstancias que estas cuatro cifras no reflejan. Si ambos ingresos son cero, no se ofrece un resultado proporcional.</p></section>
+  <section class="end-cta"><h2>El acuerdo es el principio.<br>Ledger os ayuda a llevarlo.</h2><p>Registrad los gastos comunes, quién los paga y qué parte corresponde a cada uno, manteniendo separado vuestro espacio Personal.</p><div class="actions"><a class="button" href="../">Abrir Ledger gratis ↗</a><a class="button secondary" href="../descubre/#pareja">Conocer el Modo Pareja</a></div></section>
+  <noscript><p class="warning">La calculadora necesita JavaScript para hacer las cuentas en tu dispositivo. El contenido explicativo y Ledger siguen disponibles mediante sus enlaces.</p></noscript>
+</main>
+<footer class="container footer"><span>LEDGER BY ARX · Herramientas para decidir con más claridad.</span><div class="links"><a href="../descubre/">Conoce Ledger</a><a href="../PRIVACY.md">Privacidad</a><a href="https://github.com/thepunisher7777/ledger-app">Código fuente</a></div></footer>
+<script src="calculator.js"></script><script src="page.js"></script>
+</body></html>
