@@ -29,7 +29,7 @@ const server=http.createServer(async(req,res)=>{
    const context=await browser.newContext({viewport,isMobile:label==='mobile',hasTouch:label==='mobile',locale:'es-ES',timezoneId:'Europe/Madrid'});
    const blocked=[],errors=[];await context.route('**/*',route=>{const url=new URL(route.request().url());if(url.origin!==origin){blocked.push(url.origin);return route.abort();}return route.continue();});
    const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
-   const fit=async()=>assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),'Horizontal overflow: '+page.url());
+   const fit=async()=>{const d=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth,inner:innerWidth,wide:[...document.querySelectorAll('main *')].filter(x=>x.getBoundingClientRect().right>document.documentElement.clientWidth+1).slice(0,12).map(x=>({tag:x.tagName,cls:typeof x.className==='string'?x.className:'svg',right:x.getBoundingClientRect().right}))}));if(d.scroll>d.client+1)await page.screenshot({path:path.join(out,'layout-failure-'+label+'.png'),fullPage:false});assert.ok(d.scroll<=d.client+1,'Horizontal overflow: '+page.url()+' '+JSON.stringify(d));};
    await page.goto(base);await page.locator('#ledger-onboarding-dialog[open]').waitFor();await page.locator('#ledger-onboarding-start').click();
    await page.locator('#analytics-dialog[open]').waitFor();await page.locator('#analytics-decline').click();
    await page.locator('#fab').click();await page.locator('#tx-amount').fill('12,34');await page.locator('#tx-note').fill('FICTICIO · compra de ejemplo');await page.locator('#save-transaction').click();
