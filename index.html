@@ -657,9 +657,10 @@ button{cursor:pointer}
   }
   function addMonthsDate(date,months){const first=new Date(date.getFullYear(),date.getMonth()+months,1),last=new Date(first.getFullYear(),first.getMonth()+1,0).getDate();return new Date(first.getFullYear(),first.getMonth(),Math.min(date.getDate(),last),12);}
   function loanPaidThisMonth(l,ref=now){return (l?.paymentHistory||[]).some(p=>{if((p.mode||'installment')==='principal')return false;const d=new Date(String(p.date)+'T12:00:00');return d.getFullYear()===ref.getFullYear()&&d.getMonth()===ref.getMonth();});}
+  function scheduledLoanPayment(l){return Number(l?.balance||0)>0?Math.max(0,Number(l?.payment||0)):0;}
   function nextLoanDueDate(l,ref=now){const due=Math.max(1,Math.min(28,Number(l?.dueDay||1)));let y=ref.getFullYear(),m=ref.getMonth();if(loanPaidThisMonth(l,ref)){m++;if(m>11){m=0;y++;}}return new Date(y,m,due,12);}
   function daysUntilDate(target,ref=now){const a=new Date(ref.getFullYear(),ref.getMonth(),ref.getDate()),b=new Date(target.getFullYear(),target.getMonth(),target.getDate());return Math.round((b-a)/86400000);}
-  function loanDueStatus(l){const date=nextLoanDueDate(l),days=daysUntilDate(date);let level=''; if(days<=0)level='danger';else if(days<=5)level='warn';const label=days<0?`Vencida hace ${Math.abs(days)} d`:days===0?'Vence hoy':days===1?'Vence mañana':`En ${days} días`;return {date,days,level,label};}
+  function loanDueStatus(l){if(!(Number(l?.balance||0)>0))return {date:nextLoanDueDate(l),days:Infinity,level:'',label:'Liquidado'};const date=nextLoanDueDate(l),days=daysUntilDate(date);let level=''; if(days<=0)level='danger';else if(days<=5)level='warn';const label=days<0?`Vencida hace ${Math.abs(days)} d`:days===0?'Vence hoy':days===1?'Vence mañana':`En ${days} días`;return {date,days,level,label};}
   function loanEndLabel(months){if(!Number.isFinite(months)||months<0)return '—'; if(months===0)return 'Liquidado'; return addMonthsDate(now,months).toLocaleDateString(uiLocale(),{month:'short',year:'numeric'});}
   function loanEvolutionSVG(l,extra=0,oneOff=0){
     const base=simulateLoan(l,0,0),scenario=simulateLoan(l,extra,oneOff); const src=(scenario.valid?scenario:base); if(!src.schedule.length)return '<div class="muted">Añade cuota e interés para calcular la evolución.</div>';
@@ -1035,7 +1036,7 @@ button{cursor:pointer}
     const savingsRate=pt.income>0?(pt.balance/pt.income*100):null; const avgDaily=pt.expenses/elapsed;
     const spends=periodCategorySpend(); const top3=spends.slice(0,3).reduce((s,x)=>s+x[1],0); const top3Share=pt.expenses>0?top3/pt.expenses*100:0;
     const debtPaid=exp.filter(t=>t.liabilityId).reduce((s,t)=>s+txBase(t),0); const debtRate=pt.income>0?debtPaid/pt.income*100:0;
-    const recurringMonthly=(state.recurring||[]).filter(r=>r.active!==false&&r.type!=='income').reduce((s,r)=>s+toBase(Number(r.amount||0),r.currency||accountCurrency(r.account)),0); const loanMonthly=(state.liabilities||[]).reduce((s,l)=>s+toBase(Number(l.payment||0),l.currency||'EUR'),0); const commitmentsMonthly=recurringMonthly+loanMonthly;
+    const recurringMonthly=(state.recurring||[]).filter(r=>r.active!==false&&r.type!=='income').reduce((s,r)=>s+toBase(Number(r.amount||0),r.currency||accountCurrency(r.account)),0); const loanMonthly=(state.liabilities||[]).reduce((s,l)=>s+toBase(scheduledLoanPayment(l),l.currency||'EUR'),0); const commitmentsMonthly=recurringMonthly+loanMonthly;
     const variable=exp.filter(t=>!isStructuralExpense(t)).reduce((s,t)=>s+txBase(t),0); const variableShare=pt.expenses>0?variable/pt.expenses*100:0;
     let paceDelta=null; if(selectedPeriod==='cycle'){
       const prev=statsForCycle(previousCycleMonth()), prevBounds=cycleBounds(previousCycleMonth()), prevDays=Math.max(1,Math.round((prevBounds.end-prevBounds.start)/86400000)+1), prevDaily=prev.expenses/prevDays;
@@ -1043,7 +1044,7 @@ button{cursor:pointer}
     }
     const horizon=new Date(today);horizon.setDate(horizon.getDate()+7); let upcoming7=0, upcomingCount=0;
     (state.recurring||[]).filter(r=>r.active!==false&&r.type!=='income').forEach(r=>{const day=Math.max(1,Math.min(28,Number(r.day||1)));let d=new Date(today.getFullYear(),today.getMonth(),day,12);if(d<today)d=new Date(today.getFullYear(),today.getMonth()+1,day,12);if(d<=horizon){upcoming7+=toBase(Number(r.amount||0),r.currency||accountCurrency(r.account));upcomingCount++;}});
-    (state.liabilities||[]).forEach(l=>{const d=nextLoanDueDate(l,today);if(d>=today&&d<=horizon&&toBase(Number(l.payment||0),l.currency||'EUR')>0){upcoming7+=toBase(Number(l.payment||0),l.currency||'EUR');upcomingCount++;}});
+    (state.liabilities||[]).forEach(l=>{const d=nextLoanDueDate(l,today);if(d>=today&&d<=horizon&&toBase(scheduledLoanPayment(l),l.currency||'EUR')>0){upcoming7+=toBase(scheduledLoanPayment(l),l.currency||'EUR');upcomingCount++;}});
     return {elapsed,spendDays,noSpend,savingsRate,avgDaily,top3Share,debtPaid,debtRate,commitmentsMonthly,variableShare,paceDelta,upcoming7,upcomingCount};
   }
   function statsActionRows(p,pt){
@@ -1119,7 +1120,7 @@ button{cursor:pointer}
     for(const r of (state.recurring||[]).filter(r=>r.active!==false)){
       const day=Math.max(1,Math.min(28,Number(r.day||1))); let d=new Date(today.getFullYear(),today.getMonth(),day,12); if(d<today)d=new Date(today.getFullYear(),today.getMonth()+1,day,12); if(d<=end){ const amount=toBase(Number(r.amount||0),r.currency||accountCurrency(r.account)), type=r.type||'expense'; if(type==='income') income+=amount; else expenses+=amount; count++; rows.push({date:isoLocal(d),name:r.name,amount,type}); }
     }
-    for(const l of (state.liabilities||[])){ const d=nextLoanDueDate(l,today); if(d>=today&&d<=end&&toBase(Number(l.payment||0),l.currency||'EUR')>0){const amount=toBase(Number(l.payment||0),l.currency||'EUR');expenses+=amount;count++;rows.push({date:isoLocal(d),name:l.name,amount,type:'expense'});} }
+    for(const l of (state.liabilities||[])){ const d=nextLoanDueDate(l,today); if(d>=today&&d<=end&&toBase(scheduledLoanPayment(l),l.currency||'EUR')>0){const amount=toBase(scheduledLoanPayment(l),l.currency||'EUR');expenses+=amount;count++;rows.push({date:isoLocal(d),name:l.name,amount,type:'expense'});} }
     rows.sort((a,b)=>a.date.localeCompare(b.date)); return {expenses,income,net:income-expenses,count,rows};
   }
   function monthlyDecisionSnapshot(pt,pulse,practical){

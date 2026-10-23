@@ -59,12 +59,16 @@ jobs:
 
   browser:
     name: Browser ${{ matrix.engine }} desktop and mobile
-    runs-on: ubuntu-24.04
-    timeout-minutes: 8
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
-        engine: [chromium, webkit]
+        include:
+          - engine: chromium
+            os: ubuntu-24.04
+          - engine: webkit
+            os: macos-15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -76,7 +80,7 @@ jobs:
       - run: npm ci --ignore-scripts
       - name: Install WebKit in isolated CI runner
         if: matrix.engine == 'webkit'
-        run: node node_modules/playwright-core/cli.js install --with-deps webkit
+        run: node node_modules/playwright-core/cli.js install webkit
       - name: Browser tests with isolated local fixtures
         run: npm run test:browser
         env:
