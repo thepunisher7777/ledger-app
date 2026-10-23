@@ -1,7 +1,8 @@
 # LEDGER by ARX · Beta 1.6.1
 
-La versión publicada al iniciar esta revisión era Beta 1.6.0 (`main` c1d4145), con Pareja conectado a Supabase. Esta rama prepara Beta 1.6.1; no presupone su despliegue. Personal conserva `flowfi.public.v27`, sus backups y uso sin login. Solo el espacio Pareja utiliza identidad y sincronización opcionales.
+La versión publicada al iniciar esta revisión era Beta 1.6.0 (`main` c1d4145), con Pareja conectado a Supabase. La entrega Beta 1.6.1 se valida y publica mediante el PR #6; el estado exacto lo determinan Actions y GitHub Pages. Personal conserva `flowfi.public.v27`, sus backups y uso sin login. Solo el espacio Pareja utiliza identidad y sincronización opcionales.
 
+- [Aceptación, publicación y comprobación manual](docs/RELEASE_1_6_1.md)
 - [Auditoría, métricas y estado de entrega](docs/GROWTH_AUDIT.md)
 - [Landing y calculadora](docs/GROWTH_WEB.md)
 - [Seguridad y corrección de sesión](docs/SECURITY_GROWTH_AUDIT.md)
