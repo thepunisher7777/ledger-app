@@ -4,10 +4,11 @@ const engine=process.env.BROWSER_ENGINE||'chromium';
 if(!['chromium','webkit'].includes(engine))throw Error('Unknown browser engine');
 const http=require('node:http'),fs=require('node:fs/promises'),path=require('node:path'),assert=require('node:assert/strict');
 const {execFileSync}=require('node:child_process');
-let servingOld=false;const oldFiles=new Map();
+let servingOld=false,networkDown=false;const oldFiles=new Map();
 const root=path.resolve(__dirname,'..'),out=path.join(root,'browser-artifacts');
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.png':'image/png','.webmanifest':'application/manifest+json'};
 const server=http.createServer(async(req,res)=>{
+ if(networkDown){req.socket.destroy();return;}
  try{
   const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
   if(!pathname.startsWith('/ledger-app/')){res.writeHead(404);res.end();return;}
@@ -44,13 +45,16 @@ const server=http.createServer(async(req,res)=>{
    await page.goto(base+'descubre/');await fit();await page.screenshot({path:path.join(out,'landing-'+label+'.png'),fullPage:true});
    // Wait for the actual service worker to control this context, then exercise real offline navigations.
    await page.evaluate(()=>navigator.serviceWorker.ready);await page.reload();await page.waitForFunction(()=>navigator.serviceWorker.controller!==null);
-   await context.setOffline(true);
+   assert.equal(await page.evaluate(()=>caches.match(new URL('demo/',location.href).href).then(Boolean)),true,'Demo must be cached before network failure');
+   // Playwright WebKit setOffline can abort navigation before the SW handles it.
+   // Break the server transport instead: fetch really fails and the actual SW must recover.
+   if(engine==='webkit')networkDown=true;else await context.setOffline(true);
    await page.goto(base+'demo/');await page.locator('#add-demo').waitFor();
    await page.goto(base+'reparto/');await page.locator('#example').click();assert.match(await page.locator('#total-common').innerText(),/1[.\s]?250,00/);
    await page.goto(base);await page.locator('#fab').waitFor();assert.equal(await page.evaluate(()=>localStorage.getItem('flowfi.public.v27')),saved);
    assert.deepEqual(errors,[]);assert.ok(!blocked.some(x=>/posthog|counterapi/.test(x)),'Telemetry attempted without consent');
-   evidence.runs.push({label,viewport,checks:['native onboarding/dialogs','transaction save/reload','statistics navigation','isolated demo CRUD','local calculator','no horizontal overflow','real service worker offline routes','no finance overwrite','no analytics without consent'],blockedExternalOrigins:[...new Set(blocked)]});
-   await context.close();console.log('[OK] Real '+engine+' '+label+': finance, demo, calculator, layout and offline routes');
+   evidence.runs.push({label,viewport,offlineTransport:engine==='webkit'?'server connection reset':'browser network offline',checks:['native onboarding/dialogs','transaction save/reload','statistics navigation','isolated demo CRUD','local calculator','no horizontal overflow','real service worker offline routes','no finance overwrite','no analytics without consent'],blockedExternalOrigins:[...new Set(blocked)]});
+   networkDown=false;await context.close();console.log('[OK] Real '+engine+' '+label+': finance, demo, calculator, layout and offline routes');
   }
   // Exercise an actual 1.6.0 worker -> 1.6.1 -> rollback, on the SAME origin/storage.
   const upgrade=await browser.newContext({locale:'es-ES'});

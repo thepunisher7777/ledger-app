@@ -86,6 +86,12 @@ jobs:
         env:
           CHROME_BIN: /usr/bin/google-chrome
           BROWSER_ENGINE: ${{ matrix.engine }}
+      - name: Verify published Pages in isolated browser after merge
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: node scripts/public-release.test.cjs
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+          BROWSER_ENGINE: ${{ matrix.engine }}
       - name: Preserve screenshots and browser evidence
         if: always()
         uses: actions/upload-artifact@v4
