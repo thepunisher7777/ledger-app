@@ -56,6 +56,8 @@ const server=http.createServer(async(req,res)=>{
    evidence.runs.push({label,viewport,offlineTransport:engine==='webkit'?'server connection reset':'browser network offline',checks:['native onboarding/dialogs','transaction save/reload','statistics navigation','isolated demo CRUD','local calculator','no horizontal overflow','real service worker offline routes','no finance overwrite','no analytics without consent'],blockedExternalOrigins:[...new Set(blocked)]});
    networkDown=false;await context.close();console.log('[OK] Real '+engine+' '+label+': finance, demo, calculator, layout and offline routes');
   }
+  // Replay the public check unchanged against the candidate BEFORE deployment.
+  await new Promise((resolve,reject)=>require('node:child_process').execFile(process.execPath,[path.join(__dirname,'public-release.test.cjs')],{env:{...process.env,LEDGER_TEST_BASE:base}},(error,stdout,stderr)=>{console.log(stdout);if(error)reject(Error(stderr||error.message));else resolve();}));
   // Exercise an actual 1.6.0 worker -> 1.6.1 -> rollback, on the SAME origin/storage.
   const upgrade=await browser.newContext({locale:'es-ES'});
   await upgrade.route('**/*',r=>new URL(r.request().url()).origin===origin?r.continue():r.abort());

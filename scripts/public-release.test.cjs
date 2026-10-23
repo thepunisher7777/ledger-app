@@ -1,6 +1,7 @@
 // Ephemeral browser profile; consent denied BEFORE navigation. No real accounts.
 const {chromium,webkit}=require('playwright-core'),assert=require('node:assert/strict'),fs=require('node:fs/promises');
-const base='https://thepunisher7777.github.io/ledger-app/';
+const base=process.env.LEDGER_TEST_BASE||'https://thepunisher7777.github.io/ledger-app/';
+if(process.env.LEDGER_TEST_BASE&&!/^http:\/\/127\.0\.0\.1:\d+\/ledger-app\/$/.test(base))throw Error('Only isolated loopback override is allowed');
 (async()=>{
  let ready=false;for(let i=0;i<60;i++){try{const r=await fetch(base,{cache:'no-store'});if(r.ok&&(await r.text()).includes("const APP_VERSION = 'Beta 1.6.1'")){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,5000));}assert.ok(ready,'Pages did not publish Beta 1.6.1 within five minutes');
  const engine=process.env.BROWSER_ENGINE||'chromium',browser=engine==='webkit'?await webkit.launch({headless:true}):await chromium.launch({headless:true,executablePath:process.env.CHROME_BIN||undefined,channel:process.env.CHROME_BIN?undefined:'chrome'});
