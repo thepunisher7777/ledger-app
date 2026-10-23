@@ -21,7 +21,7 @@ Añadir la prueba anterior al comando principal de CI. Enlazar desde Ledger a `d
 
 ## Pendiente y límites SEO
 
-No hay capturas reales disponibles en este checkout, y no se ha realizado una sesión visual aislada con datos ficticios. No se ha generado ninguna captura falsa. El requisito de capturas reales queda pendiente de una sesión de navegador que use únicamente datos ficticios y de su revisión visual antes de incorporarlas.
+Capturas reales de Personal y demo obtenidas mediante Chrome aislado en GitHub Actions, con datos ficticios, revisadas visualmente e incorporadas a la landing. [Método y resultado](BROWSER_VALIDATION.md). La emulación móvil no sustituye Safari/iPhone físico.
 
 En GitHub Pages de proyecto, `https://thepunisher7777.github.io/ledger-app/robots.txt` **no es** el robots efectivo del dominio: los rastreadores consultan `https://thepunisher7777.github.io/robots.txt`. Se incluye el archivo como política preparada para un futuro alojamiento en raíz, pero no se afirma que cambie el rastreo del dominio. El sitemap público sí puede enviarse como URL completa a Search Console. Eso requiere acceso a una propiedad verificada; no se ha creado ni contratado nada.
 

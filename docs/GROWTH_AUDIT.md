@@ -67,11 +67,11 @@ Comandos de aceptación: `npm ci --ignore-scripts`, `python scripts/smoke_check.
 - 39 controles PostgreSQL de autorización, 20 integración HTTP/sincronización, 12 aislamiento DOM; invitaciones, sesiones, recuperación y carreras cubiertas por suites específicas.
 - Pruebas nuevas: onboarding/reapertura/conservación byte a byte, demo CRUD sin red/storage, 6 grupos calculadora/DOM/SEO, consentimiento y privacidad analítica, rollback por fallo de persistencia y caché por ruta/subdirectorio.
 - Fixtures ficticias y PGlite/SDK real con transporte simulado. No se han creado usuarios ni cambiado contraseñas reales durante esta revisión. La revisión alojada de Supabase fue de permisos/metadatos, no una prueba manual de dos iPhones ni de las cuentas del propietario.
-- Sin validación visual o iPhone físico, mediciones Lighthouse, prueba de consumo energético, captura real nueva ni verificación de instalación/offline en Safari. Estas limitaciones impiden afirmar validación móvil integral.
+- Continuación: [prueba real de Chrome aprobada](BROWSER_VALIDATION.md) en escritorio y emulación móvil, con revisión visual de capturas, CRUD básico y service worker offline. Sin iPhone/Safari físico, Lighthouse, prueba de consumo energético ni verificación de instalación iOS; no se afirma validación móvil integral.
 
 ## SEO, crecimiento, Premium y coste
 
-SEO implementado: canonical, títulos/descripciones, OG con icono auténtico, datos estructurados sin testimonios/valoraciones inventadas, sitemap, enlaces y contenido original. `robots.txt` bajo el subdirectorio de Pages no controla la raíz del dominio. Search Console e indexación no se han validado. Capturas reales pendientes; no se han fabricado imágenes.
+SEO implementado: canonical, títulos/descripciones, OG con icono auténtico, datos estructurados sin testimonios/valoraciones inventadas, sitemap, enlaces y contenido original. `robots.txt` bajo el subdirectorio de Pages no controla la raíz del dominio. Search Console e indexación no se han validado. Capturas reales con datos ficticios incorporadas tras verificarlas en Chrome; no se han fabricado imágenes.
 
 [Investigación de crecimiento y Premium](GROWTH_PREMIUM_RESEARCH.md): fuentes primarias de precios, hipótesis SEO sin volumen inventado, experimentos, cuatro semanas de publicaciones, guiones y textos. No se ha publicado ni contactado a nadie. Se estudian 3,99 €/mes y 29,99 €/año sin asumir conversión, disposición a pagar ni beneficio neto.
 
@@ -83,6 +83,6 @@ Premium es **arquitectura documentada, no suscripción implementada**: catálogo
 
 1. Validación aislada en Safari/PWA iPhone y dos dispositivos de registro/recuperación, invitación, sesión persistente y conflicto; revisar visualmente landing/demo/calculadora. Mantener cambios de esta rama fuera de producción hasta aceptar los límites de la revisión y superar CI.
 2. Publicar la versión validada; comprobar eventos con consentimiento y exclusión real de identidades de prueba. La cohorte vacía no excluye pruebas por arte de magia. Revisar activación, retención y 50 MAU medidos antes de extender funciones.
-3. Incorporar capturas con datos ficticios y verificar sitemap en Search Console con una propiedad autorizada. No hace falta comprar dominio.
+3. Verificar sitemap en Search Console con una propiedad autorizada. Capturas ficticias reales ya incorporadas; no hace falta comprar dominio.
 4. Revisar disponibilidad de protección de contraseñas filtradas sin activar costes; completar evidencia alojada de Auth antes de cualquier cambio futuro del backend.
 5. Experimentos orgánicos del plan, sin automatizar publicaciones externas. Decidir Premium tras señales de utilidad y entrevistas voluntarias; implementar derechos/pagos solo con autorización posterior.

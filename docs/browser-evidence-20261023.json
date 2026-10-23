@@ -1,0 +1,44 @@
+{
+  "engine": "155.0.8059.39",
+  "scope": "Chromium desktop + mobile emulation, not Safari or a physical iPhone",
+  "runs": [
+    {
+      "label": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "checks": [
+        "native onboarding/dialogs",
+        "transaction save/reload",
+        "statistics navigation",
+        "isolated demo CRUD",
+        "local calculator",
+        "no horizontal overflow",
+        "real service worker offline routes",
+        "no finance overwrite",
+        "no analytics without consent"
+      ],
+      "blockedExternalOrigins": []
+    },
+    {
+      "label": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "checks": [
+        "native onboarding/dialogs",
+        "transaction save/reload",
+        "statistics navigation",
+        "isolated demo CRUD",
+        "local calculator",
+        "no horizontal overflow",
+        "real service worker offline routes",
+        "no finance overwrite",
+        "no analytics without consent"
+      ],
+      "blockedExternalOrigins": []
+    }
+  ]
+}
