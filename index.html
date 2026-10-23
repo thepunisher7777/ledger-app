@@ -849,23 +849,32 @@ button{cursor:pointer}
 
   function cycleOptionLabel(d){ const b=cycleBounds(d); return `${capitalize(monthFmt.format(d))} · ${dayFmt.format(b.start)} — ${dayFmt.format(b.end)}`; }
   function availableCycleMonths(){
-    const dates=state.transactions.map(t=>new Date(String(t.date)+'T12:00:00')).filter(d=>!Number.isNaN(d));
-    let min=dates.length?new Date(Math.min(...dates)):new Date(now.getFullYear(),now.getMonth()-12,1);
-    const configuredStart=Math.max(1,Math.min(28,Number(state.settings?.cycleStartDay)||28));
-    min=new Date(min.getFullYear(),min.getMonth()-(min.getDate()<configuredStart?1:0),1);
-    const current=currentCycleMonth(now); const maxMonth=new Date(Math.max(current.getTime(),selectedMonth.getTime()));
-    const opts=[]; let cur=new Date(maxMonth.getFullYear(),maxMonth.getMonth(),1);
-    for(let i=0;i<120&&cur>=min;i++){opts.push(new Date(cur));cur=new Date(cur.getFullYear(),cur.getMonth()-1,1);}
-    return opts;
+    const current=currentCycleMonth(now), months=new Map();
+    const add=d=>{if(Number.isFinite(d.getTime()))months.set(monthKey(d),new Date(d));};
+    let min=new Date(current.getFullYear(),current.getMonth()-12,1);
+    // A transaction on/after payday belongs to the NEXT labelled cycle.
+    // Always include every recorded cycle, even beyond the quick-pick window.
+    for(const t of state.transactions){
+      const date=new Date(String(t.date)+'T12:00:00');if(!Number.isFinite(date.getTime()))continue;
+      const cycle=currentCycleMonth(date);add(cycle);if(cycle<min)min=cycle;
+    }
+    for(let i=0;i<120;i++){const d=new Date(current.getFullYear(),current.getMonth()-i,1);if(d<min)break;add(d);}
+    for(let i=1;i<=12;i++)add(new Date(current.getFullYear(),current.getMonth()+i,1));
+    add(current);add(selectedMonth);
+    return [...months.values()].sort((a,b)=>b-a);
+  }
+  function selectCycleMonth(value){
+    if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(value)||!normalizeDate(value+'-01'))return false;
+    selectedMonth=new Date(value+'-01T12:00:00');selectedPeriod='cycle';return true;
   }
   function renderMonthDropdown(){
     const menu=el('month-dropdown-menu'); if(!menu) return;
     const current=currentCycleMonth(now);
     let html='';
     if(selectedPeriod==='cycle'){
-      html=`<div class="month-dropdown-head">Ciclos mensuales</div>`;
+      html=`<div class="month-dropdown-head">Ciclos mensuales</div><div class="month-cycle-controls" style="display:grid;gap:8px;padding:8px 10px 12px;border-bottom:1px solid var(--line)"><div style="display:flex;justify-content:space-between;gap:8px"><button type="button" class="secondary-btn" data-month-step="-1" aria-label="Ciclo anterior">←</button><strong style="align-self:center;font-size:13px">${capitalize(monthFmt.format(selectedMonth))}</strong><button type="button" class="secondary-btn" data-month-step="1" aria-label="Ciclo siguiente">→</button></div><label for="month-jump" style="font-size:12px;color:var(--muted)">Ir a mes o ciclo</label><div style="display:flex;gap:8px"><input id="month-jump" type="month" value="${monthKey(selectedMonth)}" min="0001-01" max="9999-12" style="min-width:0;flex:1;background:var(--surface-2);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:8px"><button type="button" class="secondary-btn" data-month-jump="1">Ver</button></div></div>`;
       html+=`<button type="button" class="month-dropdown-item month-dropdown-current ${monthKey(selectedMonth)===monthKey(current)?'active':''}" data-month-value="${monthKey(current)}"><span class="month-item-copy"><b>Periodo actual</b><small>${cycleOptionLabel(current)}</small></span><span class="month-check">${monthKey(selectedMonth)===monthKey(current)?'✓':'Ahora'}</span></button>`;
-      html+=availableCycleMonths().filter(d=>monthKey(d)!==monthKey(current)).map(d=>`<button type="button" class="month-dropdown-item ${monthKey(d)===monthKey(selectedMonth)?'active':''}" data-month-value="${monthKey(d)}"><span class="month-item-copy"><b>${capitalize(monthFmt.format(d))}</b><small>${cycleOptionLabel(d).split('·').slice(1).join('·').trim()}</small></span><span class="month-check">${monthKey(d)===monthKey(selectedMonth)?'✓':''}</span></button>`).join('');
+      html+=availableCycleMonths().filter(d=>monthKey(d)!==monthKey(current)).map(d=>`<button type="button" class="month-dropdown-item ${monthKey(d)===monthKey(selectedMonth)?'active':''}" data-month-value="${monthKey(d)}"><span class="month-item-copy"><b>${capitalize(monthFmt.format(d))}</b><small>${cycleOptionLabel(d).split('·').slice(1).join('·').trim()}</small></span><span class="month-check">${monthKey(d)===monthKey(selectedMonth)?'✓':monthKey(d)>monthKey(current)?'<span>Futuro</span>':''}</span></button>`).join('');
     } else if(selectedPeriod==='year'){
       const years=new Set(state.transactions.map(t=>Number(String(t.date).slice(0,4))).filter(Boolean)); years.add(now.getFullYear()); years.add(selectedMonth.getFullYear());
       html=`<div class="month-dropdown-head">Años</div>`+[...years].sort((a,b)=>b-a).map(y=>`<button type="button" class="month-dropdown-item ${y===selectedMonth.getFullYear()?'active':''}" data-year-value="${y}"><span class="month-item-copy"><b>${y}</b><small>Ver el año completo</small></span><span class="month-check">${y===selectedMonth.getFullYear()?'✓':''}</span></button>`).join('');
@@ -1578,7 +1587,8 @@ button{cursor:pointer}
   el('save-category').addEventListener('click',saveCategory);
   el('value-dialog-save').addEventListener('click',()=>{const v=parseMoney(el('value-dialog-input').value);if(valueDialogCallback){valueDialogCallback(v);valueDialogCallback=null;}el('value-dialog').close();});
   el('month-button').addEventListener('click',e=>{e.stopPropagation();const open=!el('month-menu-wrap').classList.contains('open');setMonthMenuOpen(open);});
-  el('month-dropdown-menu').addEventListener('click',e=>{const item=e.target.closest('[data-month-value],[data-year-value],[data-reset-current]');if(!item)return;if(item.dataset.monthValue&&/^\d{4}-\d{2}$/.test(item.dataset.monthValue)){const [y,m]=item.dataset.monthValue.split('-').map(Number);selectedMonth=new Date(y,m-1,1);}else if(item.dataset.yearValue){selectedMonth=new Date(Number(item.dataset.yearValue),selectedMonth.getMonth(),1);}else if(item.dataset.resetCurrent){selectedMonth=currentCycleMonth(now);}setMonthMenuOpen(false);render();});
+  el('month-dropdown-menu').addEventListener('click',e=>{const item=e.target.closest('[data-month-value],[data-year-value],[data-reset-current],[data-month-step],[data-month-jump]');if(!item)return;if(item.dataset.monthStep){const next=new Date(selectedMonth.getFullYear(),selectedMonth.getMonth()+Number(item.dataset.monthStep),1);if(selectCycleMonth(monthKey(next))){render();setMonthMenuOpen(true);}return;}if(item.dataset.monthJump){if(!selectCycleMonth(el('month-jump').value)){toast('Elige un mes válido');return;}}else if(item.dataset.monthValue){if(!selectCycleMonth(item.dataset.monthValue))return;}else if(item.dataset.yearValue){selectedMonth=new Date(Number(item.dataset.yearValue),selectedMonth.getMonth(),1);}else if(item.dataset.resetCurrent){selectedMonth=currentCycleMonth(now);}setMonthMenuOpen(false);render();});
+  el('month-dropdown-menu').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='month-jump'){e.preventDefault();el('month-dropdown-menu').querySelector('[data-month-jump]').click();}});
   document.addEventListener('click',e=>{if(!e.target.closest('#month-menu-wrap'))setMonthMenuOpen(false);});
   document.addEventListener('keydown',e=>{if(e.key==='Escape')setMonthMenuOpen(false);});
   document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>el(b.dataset.close).close()));
