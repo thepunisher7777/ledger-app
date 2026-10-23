@@ -3,7 +3,8 @@ const {chromium,webkit}=require('playwright-core'),assert=require('node:assert/s
 const base=process.env.LEDGER_TEST_BASE||'https://thepunisher7777.github.io/ledger-app/';
 if(process.env.LEDGER_TEST_BASE&&!/^http:\/\/127\.0\.0\.1:\d+\/ledger-app\/$/.test(base))throw Error('Only isolated loopback override is allowed');
 (async()=>{
- let ready=false;for(let i=0;i<60;i++){try{const r=await fetch(base,{cache:'no-store'});if(r.ok&&(await r.text()).includes("const APP_VERSION = 'Beta 1.6.1'")){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,5000));}assert.ok(ready,'Pages did not publish Beta 1.6.1 within five minutes');
+ const expectedHtml=await fs.readFile(require('node:path').join(__dirname,'../index.html'),'utf8'),expectedWorker=await fs.readFile(require('node:path').join(__dirname,'../sw.js'),'utf8');
+ let ready=false;for(let i=0;i<60;i++){try{const [r,w]=await Promise.all([fetch(base,{cache:'no-store'}),fetch(base+'sw.js',{cache:'no-store'})]);if(r.ok&&w.ok&&(await r.text())===expectedHtml&&(await w.text())===expectedWorker){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,5000));}assert.ok(ready,'Pages did not publish this exact HTML and service worker within five minutes');
  const engine=process.env.BROWSER_ENGINE||'chromium',browser=engine==='webkit'?await webkit.launch({headless:true}):await chromium.launch({headless:true,executablePath:process.env.CHROME_BIN||undefined,channel:process.env.CHROME_BIN?undefined:'chrome'});
  try{
   const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,locale:'es-ES'}),blocked=[],errors=[];
