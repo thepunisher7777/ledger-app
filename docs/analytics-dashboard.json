@@ -1,0 +1,272 @@
+{
+  "dashboard_id": 1049553,
+  "url": "https://eu.posthog.com/project/294006/dashboard/1049553",
+  "project_id": 294006,
+  "verified_at": "2026-10-23T14:32:34.396Z",
+  "test_cohort": 262989,
+  "queries": [
+    {
+      "name": "Actividad diaria · identidades medidas",
+      "description": "Identidades con ledger_active por día, consentimiento y exclusión Internal/Test. No equivale a personas ni instalaciones.",
+      "query": {
+        "kind": "TrendsQuery",
+        "series": [
+          {
+            "kind": "EventsNode",
+            "event": "ledger_active",
+            "math": "dau"
+          }
+        ],
+        "dateRange": {
+          "date_from": "-30d"
+        },
+        "interval": "day",
+        "filterTestAccounts": true,
+        "trendsFilter": {
+          "display": "ActionsLineGraph"
+        }
+      }
+    },
+    {
+      "name": "Activas · últimos 7 días",
+      "description": "Identidades únicas con ledger_active en 7 días. No sumar los DAU.",
+      "query": {
+        "kind": "TrendsQuery",
+        "series": [
+          {
+            "kind": "EventsNode",
+            "event": "ledger_active",
+            "math": "dau"
+          }
+        ],
+        "dateRange": {
+          "date_from": "-7d"
+        },
+        "interval": "day",
+        "filterTestAccounts": true,
+        "trendsFilter": {
+          "display": "ActionsTable"
+        }
+      }
+    },
+    {
+      "name": "Activas · últimos 30 días",
+      "description": "Identidades únicas con ledger_active en 30 días. Objetivos 50/100/300 definidos sobre esta medida voluntaria.",
+      "query": {
+        "kind": "TrendsQuery",
+        "series": [
+          {
+            "kind": "EventsNode",
+            "event": "ledger_active",
+            "math": "dau"
+          }
+        ],
+        "dateRange": {
+          "date_from": "-30d"
+        },
+        "interval": "day",
+        "filterTestAccounts": true,
+        "trendsFilter": {
+          "display": "ActionsTable"
+        }
+      }
+    },
+    {
+      "name": "Nuevas identidades medidas · semanal",
+      "description": "Primer ledger_active por identidad. No prueba primera instalación ni primer uso real; cambiar dispositivo o borrar almacenamiento altera identidad.",
+      "query": {
+        "kind": "TrendsQuery",
+        "series": [
+          {
+            "kind": "EventsNode",
+            "event": "ledger_active",
+            "math": "first_time_for_user"
+          }
+        ],
+        "dateRange": {
+          "date_from": "-30d"
+        },
+        "interval": "week",
+        "filterTestAccounts": true,
+        "trendsFilter": {
+          "display": "ActionsBar"
+        }
+      }
+    },
+    {
+      "name": "Aperturas · evolución semanal",
+      "description": "Conteo ledger_session_started, una apertura por carga. No inicios Auth ni personas distintas.",
+      "query": {
+        "kind": "TrendsQuery",
+        "series": [
+          {
+            "kind": "EventsNode",
+            "event": "ledger_session_started",
+            "math": "total"
+          }
+        ],
+        "dateRange": {
+          "date_from": "-30d"
+        },
+        "interval": "week",
+        "filterTestAccounts": true,
+        "trendsFilter": {
+          "display": "ActionsBar"
+        }
+      }
+    },
+    {
+      "name": "Funciones usadas · identidades",
+      "description": "ledger_feature_used por feature. Instrumentación antigua incompleta; nueva Beta 1.6.1 añade acciones de valor sin datos financieros.",
+      "query": {
+        "kind": "TrendsQuery",
+        "series": [
+          {
+            "kind": "EventsNode",
+            "event": "ledger_feature_used",
+            "math": "dau"
+          }
+        ],
+        "dateRange": {
+          "date_from": "-30d"
+        },
+        "interval": "day",
+        "filterTestAccounts": true,
+        "trendsFilter": {
+          "display": "ActionsBarValue"
+        },
+        "breakdownFilter": {
+          "breakdowns": [
+            {
+              "property": "feature",
+              "type": "event"
+            }
+          ],
+          "breakdown_limit": 20
+        }
+      }
+    },
+    {
+      "name": "Versiones activas",
+      "description": "Identidades por app_version observada, no instalaciones ni cuentas registradas.",
+      "query": {
+        "kind": "TrendsQuery",
+        "series": [
+          {
+            "kind": "EventsNode",
+            "event": "ledger_version_seen",
+            "math": "dau"
+          }
+        ],
+        "dateRange": {
+          "date_from": "-30d"
+        },
+        "interval": "day",
+        "filterTestAccounts": true,
+        "trendsFilter": {
+          "display": "ActionsBarValue"
+        },
+        "breakdownFilter": {
+          "breakdowns": [
+            {
+              "property": "app_version",
+              "type": "event"
+            }
+          ],
+          "breakdown_limit": 10
+        }
+      }
+    },
+    {
+      "name": "Retención semanal · primera actividad medida",
+      "description": "Primera actividad ledger_active seguida por ledger_active semanal. Ventanas recientes incompletas no significan abandono. Muestra pequeña y voluntaria.",
+      "query": {
+        "kind": "RetentionQuery",
+        "dateRange": {
+          "date_from": "-30d"
+        },
+        "filterTestAccounts": true,
+        "retentionFilter": {
+          "period": "Week",
+          "totalIntervals": 4,
+          "targetEntity": {
+            "id": "ledger_active",
+            "type": "events"
+          },
+          "returningEntity": {
+            "id": "ledger_active",
+            "type": "events"
+          },
+          "retentionType": "retention_first_time",
+          "retentionReference": "total",
+          "cumulative": false
+        }
+      }
+    }
+  ],
+  "future_instrumentation": [
+    {
+      "name": "Hitos de activación · pendiente Beta 1.6.1",
+      "description": "Nueva instrumentación ledger_milestone. Sin historia fiable antes de publicar Beta 1.6.1. Vacío NO demuestra falta de activación. Primera apertura/configuración/transacción/presupuesto medidos tras consentimiento.",
+      "query": {
+        "kind": "TrendsQuery",
+        "series": [
+          {
+            "kind": "EventsNode",
+            "event": "ledger_milestone",
+            "math": "dau"
+          }
+        ],
+        "dateRange": {
+          "date_from": "-30d"
+        },
+        "interval": "day",
+        "filterTestAccounts": true,
+        "trendsFilter": {
+          "display": "ActionsBarValue"
+        },
+        "breakdownFilter": {
+          "breakdowns": [
+            {
+              "property": "milestone",
+              "type": "event"
+            }
+          ],
+          "breakdown_limit": 10
+        }
+      }
+    },
+    {
+      "name": "Instalación verificada · solo appinstalled · pendiente 1.6.1",
+      "description": "Nueva medición. Solo ledger_milestone=verified-pwa-install tras evento del navegador. Safari iOS no lo expone: cobertura parcial. ledger_install histórico excluido; vacío antes del despliegue no significa cero instalaciones.",
+      "query": {
+        "kind": "TrendsQuery",
+        "series": [
+          {
+            "kind": "EventsNode",
+            "event": "ledger_milestone",
+            "math": "dau",
+            "properties": [
+              {
+                "key": "milestone",
+                "type": "event",
+                "operator": "exact",
+                "value": [
+                  "verified-pwa-install"
+                ]
+              }
+            ]
+          }
+        ],
+        "dateRange": {
+          "date_from": "-30d"
+        },
+        "interval": "day",
+        "filterTestAccounts": true,
+        "trendsFilter": {
+          "display": "ActionsTable"
+        }
+      }
+    }
+  ]
+}

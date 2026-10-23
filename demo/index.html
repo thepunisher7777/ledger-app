@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07111f">
+  <meta name="robots" content="noindex,follow">
+  <meta name="description" content="Prueba Ledger con datos ficticios. Añade y edita movimientos sin abrir tus finanzas personales.">
+  <title>Demo segura de Ledger by ARX</title>
+  <link rel="icon" href="../ledger-icon-192-v2.png">
+  <link rel="stylesheet" href="demo.css">
+</head>
+<body>
+  <header><a class="brand" href="../descubre/">LEDGER <span>by ARX</span></a><a class="link" href="../">Abrir mi Ledger ↗</a></header>
+  <main>
+    <section class="notice" aria-label="Modo demostración"><b>DEMO · DATOS FICTICIOS</b><p>Practica con una cuenta de ejemplo. Los cambios solo duran mientras esta pantalla está abierta: no leemos ni guardamos tus datos personales.</p></section>
+    <div class="heading"><div><span class="eyebrow">Tu primer vistazo</span><h1>Hazlo tuyo.<br>Sin tocar tus finanzas.</h1></div><button class="quiet" id="reset-demo">Reiniciar demo</button></div>
+    <section class="summary" aria-label="Resumen de demostración"><article><span>Ingresos registrados</span><strong id="income"></strong></article><article><span>Gastos registrados</span><strong id="expense"></strong></article><article><span>Balance del ejemplo</span><strong id="balance"></strong></article></section>
+    <div class="columns"><section><div class="section-head"><h2>Movimientos de ejemplo</h2><button id="add-demo" class="primary">＋ Añadir</button></div><p class="hint">Toca un movimiento para editarlo. Todo lo que ves aquí es ficticio.</p><div id="transactions" class="transactions"></div></section>
+    <aside><section class="card"><span class="eyebrow">Planifica un límite</span><h2>Presupuesto de comida</h2><p>Comprueba cómo cambia al registrar un gasto de comida.</p><div class="budget-amount"><strong id="budget-spent"></strong><span id="budget-limit"></span></div><div class="track"><div id="budget-progress"></div></div><p id="budget-state" class="hint" role="status"></p><form id="budget-form"><label for="budget-input">Límite del ejemplo (€)</label><div class="row"><input id="budget-input" type="number" min="0.01" max="1000000" step="0.01" required value="300"><button class="quiet">Guardar</button></div></form></section>
+      <section class="card"><span class="eyebrow">Lee tus hábitos</span><h2>Gastos por categoría</h2><div id="categories"></div></section>
+      <section class="card cta"><h2>Empieza con tus propios datos</h2><p>En Ledger puedes usar ciclos, gastos recurrentes, importaciones, copias y Modo Pareja. Esta demo muestra las operaciones básicas.</p><a href="../" class="primary link-button">Abrir Ledger</a><a href="../reparto/" class="link">Calcular un reparto en pareja ↗</a></section>
+    </aside></div>
+    <footer>Sin registro, sin analítica y sin conexión a cuentas compartidas. Recargar restablece los ejemplos. <a href="../PRIVACY.md">Privacidad de Ledger</a></footer>
+  </main>
+  <dialog id="movement-dialog" aria-labelledby="movement-title"><div class="dialog-head"><h2 id="movement-title">Añadir movimiento ficticio</h2><button id="close-dialog" class="quiet" aria-label="Cerrar">×</button></div><form id="movement-form"><label>Tipo<select id="movement-type"><option value="expense">Gasto</option><option value="income">Ingreso</option></select></label><label>Descripción de ejemplo<input id="movement-note" maxlength="80" required placeholder="Ej. Compra de ejemplo"></label><div class="form-row"><label>Importe (€)<input id="movement-amount" type="number" min="0.01" max="1000000" step="0.01" required></label><label>Fecha<input id="movement-date" type="date" required></label></div><label>Categoría<select id="movement-category"><option>Comida</option><option>Casa</option><option>Transporte</option><option>Entretenimiento</option><option>Salario</option><option>Otros</option></select></label><p id="form-error" class="error" role="alert"></p><button class="primary" id="save-demo">Guardar en la demo</button></form></dialog>
+  <p id="demo-status" class="sr-only" role="status"></p>
+  <script src="demo.js"></script>
+</body>
+</html>

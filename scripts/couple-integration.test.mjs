@@ -340,7 +340,17 @@ try {
     assert.equal(sb.values.get('flowfi.public.v27'), 'PRIVATE_B_15000');
     assert.ok(!sa.read.includes('flowfi.public.v27'));
     assert.ok(!sb.read.includes('flowfi.public.v27'));
-    assert.doesNotMatch(JSON.stringify(sent), /PRIVATE_A|PRIVATE_B|9000|15000/);
+    // Match actual private values, not coincidental digits in random UUIDs/tokens.
+    // A prior run falsely failed because an operation UUID contained '9000'.
+    function assertNoPrivateValues(value) {
+      if (typeof value === 'string') assert.doesNotMatch(value, /PRIVATE_A|PRIVATE_B/);
+      if (typeof value === 'number') assert.ok(value !== 9000 && value !== 15000);
+      if (value && typeof value === 'object') for (const item of Object.values(value)) assertNoPrivateValues(item);
+    }
+    assertNoPrivateValues({operation:'53da2169-37ab-4443-9cdc-08900010cce6'});
+    assert.throws(() => assertNoPrivateValues({payload:{amount:9000}}));
+    assert.throws(() => assertNoPrivateValues({payload:{note:'PRIVATE_A_9000'}}));
+    assertNoPrivateValues(sent);
   });
   a.enqueue('expense', { ...p, title: 'Propuesta A' }, { id: q.id, revision: 1 });
   b.enqueue('expense', { ...p, title: 'Editado B' }, { id: q.id, revision: 1 });

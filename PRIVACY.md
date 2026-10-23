@@ -48,3 +48,11 @@ Abandonar cierra escrituras y revoca al saliente; el restante conserva lectura/e
 ## Identidad Pareja sin correo
 
 El servidor del espacio Pareja almacena el nombre de usuario, identificador Auth y hash de un código aleatorio de recuperación. Supabase Auth procesa la contraseña. No se requiere dirección de correo real para este flujo; `ledger-users.invalid` es un identificador técnico. Los límites de alta/recuperación conservan temporalmente un hash de IP y contadores durante una hora. El código original no se guarda en Ledger ni se incorpora a backups. Al recuperar se revocan sesiones y rota el código; las finanzas Personal no se envían a este endpoint.
+
+## Instrumentación 1.6.1
+
+Solo tras consentimiento, `ledger_milestone` registra primera apertura **medida**, cambio de moneda base, primera transacción/presupuesto guardado tras activar medición y el evento de instalación `appinstalled` cuando el navegador lo proporciona. No reconstruye actividad previa al consentimiento. Safari iOS no ofrece este último evento; abrir en modo standalone no acredita fecha de instalación. El antiguo `ledger_install` era primera medición del navegador, no una instalación verificada.
+
+Las claves `ledger.analytics.milestone.v1.*` son marcadores booleanos de hitos, independientes del contenido financiero. Los identificadores PostHog son anónimos por navegador: no son la identidad de Supabase ni permiten contar personas entre dispositivos. Valores y eventos tienen lista permitida; se omiten URLs, propiedades de perfil, textos libres y geolocalización. La retirada del consentimiento bloquea también el envío de eventos encolados al llegar a `before_send`. No elimina retrospectivamente eventos que el servidor ya hubiera recibido.
+
+La demo no lee ni escribe almacenamiento personal. La calculadora no guarda sus entradas y comparte solo su enlace público. La guía usa únicamente `ledger.onboarding.v1` para recordar su cierre. No se añaden cookies publicitarias ni grabaciones de sesión.

@@ -130,6 +130,7 @@
   }
   function login(mode = 'login', initialUsername = '') {
     const signup = mode === 'register', recover = mode === 'recover';
+    if(signup) window.LedgerTelemetry?.feature('couple-registration-start');
     const code = signup || recover ? window.LedgerCoupleAuth.recoveryCode() : '';
     form(
       `<h2>${signup ? 'Crear identidad Pareja' : recover ? 'Recuperar acceso' : 'Entrar en Pareja'}</h2><p>Sin correo. Personal sigue funcionando sin registro.</p>${field('username', 'Nombre de usuario', initialUsername)}${recover ? field('recoveryCode', 'Código de recuperación anterior') : ''}${field('password', recover ? 'Nueva contraseña (mínimo 12 caracteres)' : 'Contraseña', '', 'password')}${signup || recover ? `${field('repeat', 'Repite la contraseña', '', 'password')}<p>Guarda este nuevo código antes de continuar. Permite recuperar tu cuenta; no lo compartas con tu pareja ni lo confundas con la invitación.</p><label>Código de recuperación<input readonly value="${code}"></label><label><input name="saved" type="checkbox" required> He guardado mi usuario y este código en un lugar seguro</label>` : ''}<p><button type="button" id="ce-auth-register">Crear cuenta</button> <button type="button" id="ce-auth-recover">Recuperar acceso</button> <button type="button" id="ce-auth-login">Ya tengo cuenta</button></p>`,
@@ -176,6 +177,7 @@
     );
     submit(async (v) => {
       await sync.rpc('create', { p_name: v.name, p_alias: v.alias, p_currency: v.currency });
+      window.LedgerTelemetry?.feature('couple-space-created');
       await sync.discover();
       render(tab);
     });
@@ -187,6 +189,7 @@
     );
     submit(async (v) => {
       await sync.rpc('join', { p_token: v.token.trim(), p_alias: v.alias });
+      window.LedgerTelemetry?.feature('couple-invitation-accepted');
       window.LedgerCoupleInvitation?.clear();
       await sync.discover();
       render(tab);

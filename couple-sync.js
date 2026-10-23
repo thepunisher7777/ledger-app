@@ -60,6 +60,15 @@
       this.syncing = false;
       this.lastVerified = 0;
       this.error = '';
+      this.authEpoch = 0;
+      this.endingSession = false;
+    }
+    assertSession(epoch) {
+      if (this.endingSession || epoch !== this.authEpoch) {
+        const error = Error('La sesión ha cambiado; vuelve a verificar el acceso');
+        error.code = 'SESSION_CHANGED';
+        throw error;
+      }
     }
     key() {
       if (!this.user || !this.space) throw Error('Acceso compartido no establecido');
@@ -117,9 +126,21 @@
       this.lastVerified = cached.lastVerified || 0;
     }
     async resume() {
-      if (!this.client.auth.getSession) return;
-      const { data } = await this.client.auth.getSession();
-      if (!data?.session?.user) return;
+      if (!this.client.auth.getSession || this.endingSession) return;
+      let epoch = this.authEpoch;
+      const { data, error } = await this.client.auth.getSession();
+      this.assertSession(epoch);
+      if (error) throw Error(error.message || 'No se ha podido restaurar la sesión');
+      if (!data?.session?.user) {
+        await this.clear();
+        this.user = null;
+        return;
+      }
+      if (this.user && this.user.id !== data.session.user.id) {
+        await this.clear();
+        this.assertSession(epoch + 1);
+        epoch = this.authEpoch;
+      }
       this.user = data.session.user;
       const id = this.storage.getItem(this.pointer());
       if (id && /^[a-f0-9-]{36}$/.test(id)) {
@@ -136,12 +157,16 @@
       try {
         await this.discover();
       } catch (e) {
+        if (epoch !== this.authEpoch || this.endingSession) return;
         this.error = e.message;
         this.onChange();
       }
     }
     async identify() {
+      const epoch = this.authEpoch;
+      this.assertSession(epoch);
       const { data, error } = await this.client.auth.getUser();
+      this.assertSession(epoch);
       if (error && ![401, 403].includes(error.status))
         throw Error(error.message || 'No se ha podido verificar la sesión');
       if (error || !data?.user) {
@@ -149,12 +174,18 @@
         this.user = null;
         throw Error('Inicia sesión para usar Pareja');
       }
-      if (this.user && this.user.id !== data.user.id) await this.clear();
+      if (this.user && this.user.id !== data.user.id) {
+        await this.clear();
+        this.assertSession(epoch + 1);
+      }
       this.user = data.user;
       return this.user;
     }
     async rpc(name, args) {
+      const epoch = this.authEpoch;
+      this.assertSession(epoch);
       const { data, error } = await this.client.rpc('ledger_couple_' + name, args);
+      this.assertSession(epoch);
       if (error) {
         const e = Error(error.message || 'Error de servidor');
         e.code = error.code;
@@ -164,7 +195,9 @@
     }
     async discover() {
       await this.identify();
+      const epoch = this.authEpoch;
       const { data, error } = await this.client.from('ledger_couple_spaces').select('*');
+      this.assertSession(epoch);
       if (error) throw Error(error.message);
       if (!data.length) {
         await this.clear();
@@ -177,14 +210,18 @@
       this.subscribe();
     }
     async read(table) {
+      const epoch = this.authEpoch;
+      this.assertSession(epoch);
+      const spaceId = this.space.id;
       const rows = [];
       for (let offset = 0; ; offset += 500) {
         const { data, error } = await this.client
           .from(table)
           .select('*')
-          .eq('space_id', this.space.id)
+          .eq('space_id', spaceId)
           .order(table === 'ledger_couple_members' ? 'slot' : 'id')
           .range(offset, offset + 499);
+        this.assertSession(epoch);
         if (error) {
           const e = Error(error.message);
           e.code = error.code;
@@ -197,10 +234,13 @@
     async refresh() {
       if (!this.space) return;
       await this.identify();
+      if (!this.space) return;
+      const epoch = this.authEpoch;
       const { data, error } = await this.client
         .from('ledger_couple_spaces')
         .select('*')
         .eq('id', this.space.id);
+      this.assertSession(epoch);
       if (error) throw Error(error.message);
       if (!data.length) {
         await this.clear();
@@ -210,6 +250,7 @@
       const members = await this.read('ledger_couple_members');
       const entities = await this.read('ledger_couple_entities');
       const activity = await this.read('ledger_couple_activity');
+      this.assertSession(epoch);
       this.members = members;
       this.entities = entities;
       this.activity = activity;
@@ -333,6 +374,7 @@
             this.entities = this.entities.filter((x) => x.id !== result.id).concat(result);
             this.persist();
           } catch (e) {
+            if (e.code === 'SESSION_CHANGED') throw e;
             if (e.code === '42501') {
               await this.clear();
               throw e;
@@ -383,6 +425,8 @@
       return out;
     }
     async clear() {
+      // Invalidate in-flight Auth/read/write acknowledgements before clearing.
+      this.authEpoch++;
       if (this.user && this.space) this.storage.removeItem(this.key());
       if (this.user) this.storage.removeItem(this.pointer());
       if (this.channel) {
@@ -399,10 +443,17 @@
       this.onChange();
     }
     async logout() {
-      await this.clear();
-      await this.client.auth.signOut({ scope: 'local' });
-      this.user = null;
-      this.onChange();
+      this.endingSession = true;
+      try {
+        await this.clear();
+        this.user = null;
+        await this.client.auth.signOut({ scope: 'local' });
+      } finally {
+        this.authEpoch++;
+        this.user = null;
+        this.endingSession = false;
+        this.onChange();
+      }
     }
   }
   return { Sync, validateConfig, CONFIG_KEY };

@@ -35,7 +35,7 @@ jobs:
       - name: Install audit dependencies
         run: npm ci --ignore-scripts
 
-      - name: Regressions, multicurrency, XML, Couple privacy and no-email identity
+      - name: Regressions, privacy, onboarding, offline routes and growth tools
         run: npm test
 
   hosted-couple:
