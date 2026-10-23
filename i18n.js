@@ -376,6 +376,16 @@
   }
 };
   for (const [lang, values] of Object.entries(EXT)) Object.assign(D[lang], values);
+  const cycleNavigation={
+    en:['Monthly cycles','Next cycle','Go to month or cycle','View','Future','Choose a valid month'],
+    fr:['Cycles mensuels','Cycle suivant','Aller au mois ou au cycle','Voir','À venir','Choisissez un mois valide'],
+    de:['Monatszyklen','Nächster Zyklus','Zu Monat oder Zyklus wechseln','Anzeigen','Zukünftig','Gültigen Monat auswählen'],
+    it:['Cicli mensili','Ciclo successivo','Vai al mese o al ciclo','Visualizza','Futuro','Scegli un mese valido'],
+    pt:['Ciclos mensais','Próximo ciclo','Ir para mês ou ciclo','Ver','Futuro','Escolha um mês válido']
+  };
+  const cycleNavigationKeys=['Ciclos mensuales','Ciclo siguiente','Ir a mes o ciclo','Ver','Futuro','Elige un mes válido'];
+  for(const [lang,values] of Object.entries(cycleNavigation))cycleNavigationKeys.forEach((key,i)=>D[lang][key]=values[i]);
+  for(const [lang,label] of Object.entries({en:'Previous cycle',fr:'Cycle précédent',de:'Vorheriger Zyklus',it:'Ciclo precedente',pt:'Ciclo anterior'}))D[lang]['Ciclo anterior']=label;
 
   const CATEGORY_KEYS = new Set(['Comida','Automóvil','Casa','Comunicaciones','Deportes','Entretenimiento','Facturas','Higiene','Mascotas','Regalos','Restaurante','Ropa','Salud','Taxi','Transporte','Ahorros','Depósitos','Salario','Otros']);
   const sourceText = new WeakMap();

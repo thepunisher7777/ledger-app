@@ -1,3 +1,10 @@
+## Beta 1.6.0 — Ciclos futuros — 2026-10-23
+
+- Selector mensual con próximos 12 ciclos, todos los ciclos con movimientos registrados y salto directo a cualquier mes.
+- Botones anterior/siguiente y rangos de fechas para localizar y corregir movimientos futuros, también al cambiar de año.
+- El día de inicio configurado se respeta: con inicio el 28, el 28 de octubre pertenece al ciclo de noviembre.
+- Editar/eliminar un movimiento futuro utiliza las acciones existentes; eliminar una ocurrencia conserva la regla recurrente. Navegar no genera pagos.
+
 ## Beta 1.6.0 — Persistencia de Pareja — 2026-10-20
 
 - Mantener sesión activado por defecto en la conexión publicada, con opción para desactivarlo al entrar en dispositivos compartidos.
