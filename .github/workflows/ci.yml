@@ -56,3 +56,26 @@ jobs:
           COUPLE_E2E_URL: https://tsmdkrllkafmlqcwzsii.supabase.co
           COUPLE_E2E_PUBLIC_KEY: sb_publishable_8qqomT5Kq4W5KcwGhw-lVw_yCPcDmQ_
           COUPLE_E2E_ALLOW_MUTATIONS: fictional-only
+
+  browser:
+    name: Real Chrome desktop and mobile regression
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Browser tests with isolated local fixtures
+        run: npm run test:browser
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+      - name: Preserve screenshots and browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ledger-browser-evidence
+          path: browser-artifacts/
+          retention-days: 7
