@@ -31,7 +31,7 @@ const server=http.createServer(async(req,res)=>{
    await fit();await page.screenshot({path:path.join(out,'ledger-home-'+label+'.png'),fullPage:false});
    await page.locator('[data-route="stats"]').click();await page.locator('#export-excel-stats').waitFor();await fit();
    await page.reload();assert.equal(await page.evaluate(()=>localStorage.getItem('flowfi.public.v27')),saved);
-   await page.goto(base+'demo/');await page.locator('#add-demo').click();await page.locator('#movement-note').fill('FICTICIO · práctica');await page.locator('#movement-amount').fill('19.99');await page.locator('#movement-form button[type="submit"]').click();
+   await page.goto(base+'demo/');await page.locator('#add-demo').click();await page.locator('#movement-note').fill('FICTICIO · práctica');await page.locator('#movement-amount').fill('19.99');await page.locator('#movement-form .primary').click();
    assert.ok((await page.locator('#transactions').innerText()).includes('FICTICIO · práctica'));await fit();assert.equal(await page.evaluate(()=>localStorage.getItem('flowfi.public.v27')),saved);
    await page.screenshot({path:path.join(out,'demo-'+label+'.png'),fullPage:false});
    await page.goto(base+'reparto/');await page.locator('#example').click();assert.match(await page.locator('#total-common').innerText(),/1[.\s]?250,00/);await fit();await page.screenshot({path:path.join(out,'calculator-'+label+'.png'),fullPage:true});
