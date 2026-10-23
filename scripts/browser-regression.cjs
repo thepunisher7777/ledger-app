@@ -45,7 +45,7 @@ const server=http.createServer(async(req,res)=>{
    await page.goto(base+'descubre/');await fit();await page.screenshot({path:path.join(out,'landing-'+label+'.png'),fullPage:true});
    // Wait for the actual service worker to control this context, then exercise real offline navigations.
    await page.evaluate(()=>navigator.serviceWorker.ready);await page.reload();await page.waitForFunction(()=>navigator.serviceWorker.controller!==null);
-   assert.equal(await page.evaluate(()=>caches.match(new URL('demo/',location.href).href).then(Boolean)),true,'Demo must be cached before network failure');
+   assert.equal(await page.evaluate(base=>caches.match(base+'demo/').then(Boolean),base),true,'Demo must be cached before network failure');
    // Playwright WebKit setOffline can abort navigation before the SW handles it.
    // Break the server transport instead: fetch really fails and the actual SW must recover.
    if(engine==='webkit')networkDown=true;else await context.setOffline(true);
