@@ -1,5 +1,7 @@
 // Real browser, isolated contexts and local files only. Never reaches production/Auth.
-const {chromium}=require('playwright-core');
+const {chromium,webkit}=require('playwright-core');
+const engine=process.env.BROWSER_ENGINE||'chromium';
+if(!['chromium','webkit'].includes(engine))throw Error('Unknown browser engine');
 const http=require('node:http'),fs=require('node:fs/promises'),path=require('node:path'),assert=require('node:assert/strict');
 const root=path.resolve(__dirname,'..'),out=path.join(root,'browser-artifacts');
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.png':'image/png','.webmanifest':'application/manifest+json'};
@@ -16,8 +18,8 @@ const server=http.createServer(async(req,res)=>{
 (async()=>{
  await fs.mkdir(out,{recursive:true});await new Promise(r=>server.listen(0,'127.0.0.1',r));
  const origin='http://127.0.0.1:'+server.address().port,base=origin+'/ledger-app/';
- const browser=await chromium.launch({channel:process.env.CHROME_BIN?undefined:'chrome',executablePath:process.env.CHROME_BIN||undefined,headless:true});
- const evidence={engine:await browser.version(),scope:'Chromium desktop + mobile emulation, not Safari or a physical iPhone',runs:[]};
+ const browser=engine==='webkit'?await webkit.launch({headless:true}):await chromium.launch({channel:process.env.CHROME_BIN?undefined:'chrome',executablePath:process.env.CHROME_BIN||undefined,headless:true});
+ const evidence={engine:await browser.version(),scope:engine+' automated desktop + mobile emulation, not Safari or a physical iPhone',runs:[]};
  try{
   for(const [label,viewport]of [['mobile',{width:390,height:844}],['desktop',{width:1440,height:1000}]]){
    const context=await browser.newContext({viewport,isMobile:label==='mobile',hasTouch:label==='mobile',locale:'es-ES',timezoneId:'Europe/Madrid'});
@@ -45,7 +47,7 @@ const server=http.createServer(async(req,res)=>{
    await page.goto(base);await page.locator('#fab').waitFor();assert.equal(await page.evaluate(()=>localStorage.getItem('flowfi.public.v27')),saved);
    assert.deepEqual(errors,[]);assert.ok(!blocked.some(x=>/posthog|counterapi/.test(x)),'Telemetry attempted without consent');
    evidence.runs.push({label,viewport,checks:['native onboarding/dialogs','transaction save/reload','statistics navigation','isolated demo CRUD','local calculator','no horizontal overflow','real service worker offline routes','no finance overwrite','no analytics without consent'],blockedExternalOrigins:[...new Set(blocked)]});
-   await context.close();console.log('[OK] Real Chrome '+label+': finance, demo, calculator, layout and offline routes');
+   await context.close();console.log('[OK] Real '+engine+' '+label+': finance, demo, calculator, layout and offline routes');
   }
  }finally{await fs.writeFile(path.join(out,'evidence.json'),JSON.stringify(evidence,null,2)+'\n');await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;}).finally(()=>server.close());

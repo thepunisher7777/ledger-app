@@ -58,9 +58,13 @@ jobs:
           COUPLE_E2E_ALLOW_MUTATIONS: fictional-only
 
   browser:
-    name: Real Chrome desktop and mobile regression
+    name: Browser ${{ matrix.engine }} desktop and mobile
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 8
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -68,14 +72,18 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci --ignore-scripts
+      - name: Install WebKit in isolated CI runner
+        if: matrix.engine == 'webkit'
+        run: node node_modules/playwright-core/cli.js install --with-deps webkit
       - name: Browser tests with isolated local fixtures
         run: npm run test:browser
         env:
           CHROME_BIN: /usr/bin/google-chrome
+          BROWSER_ENGINE: ${{ matrix.engine }}
       - name: Preserve screenshots and browser evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ledger-browser-evidence
+          name: ledger-browser-evidence-${{ matrix.engine }}
           path: browser-artifacts/
           retention-days: 7
