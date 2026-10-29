@@ -1,3 +1,12 @@
+## Beta 1.6.2 — 2026-10-29
+
+- Gastos fijos revisados: alta automática de vencidos al abrir o volver a la app, una ocurrencia por ciclo y sin generar ingresos o fechas futuras.
+- Las reglas antiguas requieren una revisión única para evitar reactivar gastos cancelados. Coincidencias manuales dudosas quedan pendientes de revisión, sin duplicar apuntes.
+- Los fijos sin registrar siguen reservados en el disponible aunque su fecha haya pasado. Lista visible de previstos en Inicio.
+- Nombres completos en Plan: acciones en fila independiente y títulos multilínea.
+- Respeta borrados por ciclo, pausas, moneda, copias existentes y saldos conciliados anteriores al alta automática.
+- Pruebas con ciclos 28–27, meses cortos, límites de año, reinicios, importaciones y fallos de almacenamiento. Sin cambios de datos financieros en el servidor.
+
 ## Beta 1.6.1 — 2026-10-23
 
 - Guía de tres pasos reabrible y demo funcional independiente, en memoria y con datos ficticios.

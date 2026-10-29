@@ -11,7 +11,7 @@ if(process.env.LEDGER_TEST_BASE&&!/^http:\/\/127\.0\.0\.1:\d+\/ledger-app\/$/.te
   await ctx.addInitScript(()=>localStorage.setItem('ledger.analytics.consent.v1','no'));
   await ctx.route('**/*',r=>{const u=new URL(r.request().url());if(u.origin!==new URL(base).origin){blocked.push(u.origin);return r.abort();}return r.continue();});
   const page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());
-  await page.goto(base);assert.equal(await page.evaluate(()=>window.LedgerAppVersion),'Beta 1.6.1');await page.locator('#ledger-onboarding-start').click();
+  await page.goto(base);assert.equal(await page.evaluate(()=>window.LedgerAppVersion),'Beta 1.6.2');await page.locator('#ledger-onboarding-start').click();
   await page.locator('#fab').click();await page.locator('#tx-amount').fill('0,01');await page.locator('#tx-note').fill('FICTICIO · validación de publicación');await page.locator('#save-transaction').click();
   await page.locator('[data-route="stats"]').click();await page.locator('#export-excel-stats').waitFor();
   console.log('[DIAG] '+JSON.stringify(await page.locator('[data-route="settings"]').evaluate(e=>{const r=e.getBoundingClientRect(),f=document.getElementById('fab').getBoundingClientRect();return{nav:{x:r.x,y:r.y,width:r.width,height:r.height},fab:{x:f.x,y:f.y,width:f.width,height:f.height},viewport:{width:innerWidth,height:innerHeight,scale:visualViewport?.scale},hit:document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.tagName};})));
@@ -20,7 +20,7 @@ if(process.env.LEDGER_TEST_BASE&&!/^http:\/\/127\.0\.0\.1:\d+\/ledger-app\/$/.te
   await page.goto(base+'reparto/');await page.locator('#example').click();assert.match(await page.locator('#total-common').innerText(),/1[.\s]?250,00/);
   await page.goto(base+'descubre/');await page.locator('#screens-title').waitFor();assert.equal(await page.locator('h1').count(),1);
   assert.deepEqual(errors,[]);assert.ok(!blocked.some(x=>/posthog|counterapi/.test(x)));
-  await fs.mkdir('browser-artifacts',{recursive:true});await fs.writeFile('browser-artifacts/public-'+engine+'.json',JSON.stringify({engine,url:base,version:'Beta 1.6.1',checks:['published version','native transaction form','statistics','JSON export','local reload','calculator','landing','consent denied'],realFinancialDataUsed:false,remoteFinancialWrites:false},null,2));
-  console.log('[OK] Published Beta 1.6.1: '+engine+' public UI, local fictional movement/export/reload, calculator, landing and denied telemetry');await ctx.close();
+  await fs.mkdir('browser-artifacts',{recursive:true});await fs.writeFile('browser-artifacts/public-'+engine+'.json',JSON.stringify({engine,url:base,version:'Beta 1.6.2',checks:['published version','native transaction form','statistics','JSON export','local reload','calculator','landing','consent denied'],realFinancialDataUsed:false,remoteFinancialWrites:false},null,2));
+  console.log('[OK] Published Beta 1.6.2: '+engine+' public UI, local fictional movement/export/reload, calculator, landing and denied telemetry');await ctx.close();
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
