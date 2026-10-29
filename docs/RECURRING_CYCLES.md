@@ -29,3 +29,11 @@ Los datos Personal están en el dispositivo. Publicar el arreglo no permite insp
 Prueba nativa de navegador para Chrome y WebKit: dos reglas ficticias antiguas, revisión que pausa una cancelada, una sola ocurrencia tras recarga y nombre largo completo en móvil/escritorio. El test DOM anterior de Pareja fijaba un movimiento al 9 de octubre pero usaba el ciclo de la fecha real; se fija su reloj financiero al 23 para evitar que el cambio de ciclo invalide una prueba ajena al cambio.
 
 Resultados definitivos, commit y despliegue: CI y PR de esta revisión. No se afirma haber revisado el backup personal del propietario ni haber instalado la PWA en su iPhone físico.
+
+## Edición y eliminación seguras
+
+Cada fijo activo o pausado incluye Eliminar con confirmación. Elimina solo la regla, conserva transacciones y referencias históricas. La misma operación sirve desde calendario y cancela si falla el guardado.
+
+Editar un apunte vinculado ofrece Solo este movimiento (predeterminado) o Este movimiento y la regla de próximos meses. Esta segunda opción modifica la regla para futuros registros, sin modificar apuntes históricos.
+
+Se corrigen falsos éxitos al guardar fijos, objetivos, categorías y préstamos. Ante fallo se restaura memoria, se mantiene el formulario y no se muestra éxito. Deshacer conserva la opción de reintentar si el almacenamiento falla. Pruebas con almacenamiento que rechaza escrituras, reintentos y conservación de historial en scripts/recurring-cycle.test.cjs; eliminación y recarga probadas en ambos navegadores de CI.

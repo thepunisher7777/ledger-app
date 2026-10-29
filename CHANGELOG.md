@@ -1,5 +1,9 @@
 ## Beta 1.6.2 — 2026-10-29
 
+- Guardados de fijos, objetivos, categorías y préstamos y Deshacer conservan el estado anterior si falla el almacenamiento, sin confirmar un éxito falso.
+- Al editar un apunte fijo se elige solo este movimiento (predeterminado) o actualizar también la regla para próximos registros.
+- Botón Eliminar en cada movimiento fijo, activo o pausado: confirmación, conservación del historial y cancelación segura si falla el guardado.
+
 - Gastos fijos revisados: alta automática de vencidos al abrir o volver a la app, una ocurrencia por ciclo y sin generar ingresos o fechas futuras.
 - Las reglas antiguas requieren una revisión única para evitar reactivar gastos cancelados. Coincidencias manuales dudosas quedan pendientes de revisión, sin duplicar apuntes.
 - Los fijos sin registrar siguen reservados en el disponible aunque su fecha haya pasado. Lista visible de previstos en Inicio.
