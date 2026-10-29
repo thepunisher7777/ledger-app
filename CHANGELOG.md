@@ -1,5 +1,7 @@
 ## Beta 1.6.2 — 2026-10-29
 
+- Exportación con selector de todos los datos, varios ciclos, día o rango inclusivo en CSV, Excel y JSON. Los informes parciales excluyen módulos ajenos al periodo y no se pueden restaurar como copias completas.
+
 - Guardados de fijos, objetivos, categorías y préstamos y Deshacer conservan el estado anterior si falla el almacenamiento, sin confirmar un éxito falso.
 - Al editar un apunte fijo se elige solo este movimiento (predeterminado) o actualizar también la regla para próximos registros.
 - Botón Eliminar en cada movimiento fijo, activo o pausado: confirmación, conservación del historial y cancelación segura si falla el guardado.
