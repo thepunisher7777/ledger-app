@@ -87,6 +87,7 @@ html = html.replace(
   'render();refreshExchangeRates();analyticsMaybeAsk();maybeStartFlowFiMigration();if(bootRecoveryNotice)',
   'window.audit={defaultState,setRoute,render,openTransaction,validateBackupObject,getState:()=>state,setState:s=>state=s};render();if(bootRecoveryNotice)',
 );
+html=html.replace("const now = new Date();", "const now = new Date('2026-10-23T12:00:00');");
 const errors = [],
   dom = new JSDOM(html, {
     url: 'https://ledger.test/',

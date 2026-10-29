@@ -54,7 +54,16 @@ const server=http.createServer(async(req,res)=>{
    await page.goto(base);await page.locator('#fab').waitFor();assert.equal(await page.evaluate(()=>localStorage.getItem('flowfi.public.v27')),saved);
    assert.deepEqual(errors,[]);assert.ok(!blocked.some(x=>/posthog|counterapi/.test(x)),'Telemetry attempted without consent');
    evidence.runs.push({label,viewport,offlineTransport:engine==='webkit'?'server connection reset':'browser network offline',checks:['native onboarding/dialogs','transaction save/reload','statistics navigation','isolated demo CRUD','local calculator','no horizontal overflow','real service worker offline routes','no finance overwrite','no analytics without consent'],blockedExternalOrigins:[...new Set(blocked)]});
-   networkDown=false;await context.close();console.log('[OK] Real '+engine+' '+label+': finance, demo, calculator, layout and offline routes');
+   networkDown=false;await context.setOffline(false);
+   const recurring=await browser.newContext({viewport,isMobile:label==='mobile',hasTouch:label==='mobile',locale:'es-ES',timezoneId:'Europe/Madrid'});
+   await recurring.route('**/*',r=>new URL(r.request().url()).origin===origin?r.continue():r.abort());
+   await recurring.addInitScript(()=>{if(!localStorage.getItem('recurring.fixture')){const name='FICTICIO Gimnasio mensual e inversión de Trade Republic',day=new Date().getDate();localStorage.setItem('ledger.analytics.consent.v1','no');localStorage.setItem('recurring.fixture','yes');localStorage.setItem('flowfi.public.v27',JSON.stringify({version:2,settings:{currency:'EUR',cycleStartDay:28},accounts:['Principal'],accountDetails:[{name:'Principal',currency:'EUR',balance:0}],transactions:[],recurring:[{id:'browser-gym',name,amount:35,day,currency:'EUR',category:'Deportes',account:'Principal',active:true,type:'expense'},{id:'browser-cancelled',name:'FICTICIO Moto cancelada',amount:120,day,currency:'EUR',category:'Otros',account:'Principal',active:true,type:'expense'}]}));}});
+   const rp=await recurring.newPage();await rp.goto(base);await rp.locator('#recurring-setup').click();await rp.locator('[data-review-rec="1"]').uncheck();await rp.locator('#recurring-review-save').click();
+   assert.equal(await rp.evaluate(()=>JSON.parse(localStorage.getItem('flowfi.public.v27')).transactions.length),1);await rp.reload();assert.equal(await rp.evaluate(()=>JSON.parse(localStorage.getItem('flowfi.public.v27')).transactions.length),1);
+   await rp.locator('[data-route="plan"]').click();const title=rp.locator('.recurring-row .row-title').first();assert.ok((await title.innerText()).includes('FICTICIO Gimnasio mensual e inversión de Trade Republic'));assert.equal(await title.evaluate(e=>getComputedStyle(e).whiteSpace),'normal');assert.ok(await title.evaluate(e=>e.scrollWidth<=e.clientWidth+1));
+   await title.scrollIntoViewIfNeeded();await rp.screenshot({path:path.join(out,'recurring-'+label+'.png'),fullPage:false});await recurring.close();
+   evidence.runs[evidence.runs.length-1].checks.push('native recurring review and no duplicate after reload','complete multiline recurring title');
+   await context.close();console.log('[OK] Real '+engine+' '+label+': finance, demo, calculator, layout and offline routes');
   }
   // Replay the public check unchanged against the candidate BEFORE deployment.
   await new Promise((resolve,reject)=>require('node:child_process').execFile(process.execPath,[path.join(__dirname,'public-release.test.cjs')],{env:{...process.env,LEDGER_TEST_BASE:base}},(error,stdout,stderr)=>{console.log(stdout);if(error)reject(Error(stderr||error.message));else resolve();}));
@@ -72,9 +81,9 @@ const server=http.createServer(async(req,res)=>{
     await page.reload();
     assert.equal(await page.evaluate(()=>localStorage.getItem('flowfi.public.v27')),fixtureBackup);
   }
-  await changeRevision(false);assert.equal(await page.evaluate(()=>window.LedgerAppVersion),'Beta 1.6.1');
+  await changeRevision(false);assert.equal(await page.evaluate(()=>window.LedgerAppVersion),'Beta 1.6.2');
   await changeRevision(true);assert.ok((await page.content()).includes("const APP_VERSION = 'Beta 1.6.0'"));
-  evidence.upgradeRollback={from:'c1d4145 / Beta 1.6.0',to:'Beta 1.6.1',rollback:'Beta 1.6.0',sameOrigin:true,financialBackup:'byte-identical'};
+  evidence.upgradeRollback={from:'c1d4145 / Beta 1.6.0',to:'Beta 1.6.2',rollback:'Beta 1.6.0',sameOrigin:true,financialBackup:'byte-identical'};
   console.log('[OK] Actual service worker upgrade and rollback preserve fictional financial backup byte for byte');
   servingOld=false;await upgrade.close();
  }finally{await fs.writeFile(path.join(out,'evidence.json'),JSON.stringify(evidence,null,2)+'\n');await browser.close();}
