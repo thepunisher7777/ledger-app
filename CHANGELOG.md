@@ -1,5 +1,7 @@
 ## Beta 1.6.2 — 2026-10-29
 
+- Fijos vinculados explícitamente a préstamos: cuota con capital/intereses, deuda e historial actualizados, control mensual de duplicados y última cuota limitada al saldo. Aplicar un gasto ya registrado al préstamo exige confirmación y no crea otro movimiento.
+
 - Exportación con selector de todos los datos, varios ciclos, día o rango inclusivo en CSV, Excel y JSON. Los informes parciales excluyen módulos ajenos al periodo y no se pueden restaurar como copias completas.
 
 - Guardados de fijos, objetivos, categorías y préstamos y Deshacer conservan el estado anterior si falla el almacenamiento, sin confirmar un éxito falso.
