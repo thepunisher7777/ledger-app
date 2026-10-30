@@ -1,4 +1,4 @@
-const CACHE='ledger-app-beta-1-6-2-recurring-2';
+const CACHE='ledger-app-beta-1-6-2-exports-1';
 const CACHE_PREFIX='ledger-app-';
 const CORE=['./','./index.html','./manifest.webmanifest','./ledger-icon-192-v2.png','./ledger-icon-512-v2.png','./ledger-apple-touch-v2.png','./posthog-stub.js','./posthog-bridge.js','./arx-analytics-guard.js','./i18n.js','./money.js','./portfolio-import.js','./couple.css','./couple-core.js','./couple-sync.js','./couple-auth.js','./couple-config.js','./couple-ui.js','./couple-invite.js','./vendor/supabase.js','./ledger-onboarding.js','./ledger-recurring.js','./descubre/','./marketing.css','./reparto/','./reparto/calculator.js','./reparto/page.js','./demo/','./demo/demo.css','./demo/demo.js','./assets/screenshots/ledger-home-mobile.png','./assets/screenshots/demo-mobile.png'];
 const base=new URL('./',self.location.href);
