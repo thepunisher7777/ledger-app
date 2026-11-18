@@ -19,3 +19,5 @@ No se modifica ningún movimiento existente ni backup real del propietario. Si e
 `scripts/historical-cycle-entry.test.cjs`: reloj 18/11/2026, ingreso ficticio de devolución de 640 € en octubre y salario ficticio en noviembre. La contrapartida creada en octubre se fecha 27/10, corrige octubre y deja todos los totales de noviembre intactos. Fechas límite 27/28, cancelación/confirmación de cambio de ciclo, transferencias, fechas de edición, ciclos 1/15/28, orden Oct/Nov/Dic/Ene y saltos lejanos.
 
 CI Chrome/WebKit móvil/escritorio valida que el ciclo activo esté visible al abrir el desplegable, orden real del DOM, captura del menú y alta de un gasto histórico con fecha persistida correcta. Sin Safari físico ni acceso a cuentas financieras reales.
+
+El ejecutor WebKit de CI usa macOS 15 Intel estándar para evitar la cola del ejecutor ARM, sin omitir pruebas ni cambiar permisos. Las capturas del selector terminan las animaciones antes de capturar para que su opacidad inicial no falsee la revisión visual.
