@@ -1,5 +1,7 @@
 ## Beta 1.6.2 — 2026-10-29
 
+- 25/11: ordenar Movimientos por fecha o importe, ascendente/descendente, en Personal y Pareja. Conserva filtros; comparación de importes en moneda base, sin cambiar movimientos ni saldos.
+
 - Corrección 18/11: añadir movimientos en ciclos históricos/futuros usa una fecha dentro del ciclo visible; aviso de destino y confirmación si se cambia a otro ciclo. El desplegable ordena cronológicamente y centra el ciclo seleccionado, sin saltar al futuro lejano.
 
 - Fijos vinculados explícitamente a préstamos: cuota con capital/intereses, deuda e historial actualizados, control mensual de duplicados y última cuota limitada al saldo. Aplicar un gasto ya registrado al préstamo exige confirmación y no crea otro movimiento.
