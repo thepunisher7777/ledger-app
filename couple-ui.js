@@ -10,6 +10,8 @@
     personalRender = () => {},
     tab = 'home',
     filterMonth = '',
+    movementOrder = 'date-desc',
+    movementKind = 'all',
     draft = null,
     timer = null;
   const $ = (id) => document.getElementById(id),
@@ -544,18 +546,17 @@
                 .slice(0, 8),
             ),
           );
-      if (route === 'transactions')
+      if (route === 'transactions') {
+        const movements=selected.filter(e=>['expense','income','contribution','settlement'].includes(e.kind)&&(movementKind==='all'||e.kind===movementKind));
+        const ordered=window.LedgerMovementSort?window.LedgerMovementSort.sort(movements,movementOrder,e=>e.payload.base_minor,e=>e.payload.date,e=>e.id):movements;
         content =
           controls +
           '<div class="couple-actions"><button data-ce-add="income" class="secondary-btn">Ingreso común</button><button data-ce-add="settlement" class="secondary-btn">Registrar compensación pagada</button></div>' +
           card(
             'Movimientos compartidos',
-            listing(
-              selected.filter((e) =>
-                ['expense', 'income', 'contribution', 'settlement'].includes(e.kind),
-              ),
-            ),
+            `<div class="couple-actions"><label>Mostrar<select id="ce-movement-kind"><option value="all">Todos</option><option value="expense">Gastos</option><option value="income">Ingresos</option><option value="contribution">Aportaciones</option><option value="settlement">Compensaciones</option></select></label><label>Ordenar por<select id="ce-movement-order" ${window.LedgerMovementSort?'':'disabled'}><option value="date-desc">Fecha: más recientes</option><option value="date-asc">Fecha: más antiguos</option><option value="amount-desc">Importe: mayor a menor</option><option value="amount-asc">Importe: menor a mayor</option></select></label></div><p>Importes comparados en la moneda base del espacio compartido.</p>`+listing(ordered),
           );
+      }
       if (route === 'stats') {
         const cats = {};
         selected
@@ -732,6 +733,8 @@
           }
         }),
     );
+    if($('ce-movement-order')){$('ce-movement-order').value=movementOrder;$('ce-movement-order').onchange=e=>{movementOrder=e.target.value;render(tab);};}
+    if($('ce-movement-kind')){$('ce-movement-kind').value=movementKind;$('ce-movement-kind').onchange=e=>{movementKind=e.target.value;render(tab);};}
     if ($('ce-month'))
       $('ce-month').onchange = (e) => {
         filterMonth = e.target.value;

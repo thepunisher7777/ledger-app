@@ -70,6 +70,7 @@ const client = {
 const modules = [
   'couple-invite.js',
   'money.js',
+  'movement-sort.js',
   'portfolio-import.js',
   'couple-core.js',
   'couple-sync.js',
@@ -196,6 +197,11 @@ function check(name, fn) {
       assert.equal(w.localStorage.getItem('flowfi.public.v27'), original);
     });
     a.setRoute('transactions');
+    check('orden compartido por fecha e importe y filtro de ingresos/gastos no toca Personal ni entidades',()=>{
+      const extra=(id,kind,amount,date)=>({...sync.entities[0],id,kind,payload:{...sync.entities[0].payload,title:'FICTICIO '+id,amount_minor:amount,base_minor:amount,date}});
+      sync.entities.push(extra('sort-small','expense',2500,'2026-10-10'),extra('sort-income','income',500000,'2026-10-11'));const source=JSON.stringify(sync.entities);a.setRoute('transactions');const rows=()=>Array.from(d.querySelectorAll('#main .couple-row [data-ce-edit]'),n=>n.dataset.ceEdit),select=(id,value)=>{d.getElementById(id).value=value;d.getElementById(id).dispatchEvent(new w.Event('change'));};
+      assert.equal(d.getElementById('ce-movement-order').disabled,false);select('ce-movement-order','date-asc');assert.deepEqual(rows(),[sync.entities[0].id,'sort-small','sort-income']);select('ce-movement-order','amount-desc');assert.deepEqual(rows(),['sort-income',sync.entities[0].id,'sort-small']);select('ce-movement-kind','expense');select('ce-movement-order','amount-asc');assert.deepEqual(rows(),['sort-small',sync.entities[0].id]);select('ce-movement-kind','income');assert.deepEqual(rows(),['sort-income']);assert.equal(JSON.stringify(sync.entities),source);assert.equal(w.localStorage.getItem('flowfi.public.v27'),original);select('ce-movement-kind','all');select('ce-movement-order','date-desc');sync.entities.splice(1);a.setRoute('transactions');
+    });
     check('movimientos y estadísticas reflejan alquiler compartido de 1100', () => {
       assert.match(d.getElementById('main').textContent, /Alquiler COMPARTIDO/);
       a.setRoute('stats');
